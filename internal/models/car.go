@@ -20,3 +20,11 @@ func (c *Car) BeforeCreate(_ *gorm.DB) (err error) {
 	c.ID = uuid.New()
 	return nil
 }
+
+type CarFilter struct {
+	RegNum  string
+	Mark    string
+	Model   string
+	MinYear int32
+	MaxYear int32
+}

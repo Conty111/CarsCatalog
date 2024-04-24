@@ -18,3 +18,9 @@ func (u *User) BeforeCreate(_ *gorm.DB) (err error) {
 	u.ID = uuid.New()
 	return nil
 }
+
+type UserFilter struct {
+	Name       string
+	Surname    string
+	Patronymic string
+}

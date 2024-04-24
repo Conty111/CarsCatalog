@@ -21,10 +21,18 @@ type Controller struct {
 
 // NewController create new instance for swagger controller
 func NewController() *Controller {
-	return &Controller{}
+	return &Controller{
+		BaseController: apiv1.BaseController{
+			RelativePath: "/swagger",
+		},
+	}
+}
+
+func (ctrl *Controller) GetRelativePath() string {
+	return ctrl.RelativePath
 }
 
 // DefineRoutes adds swagger controller routes to the router
 func (ctrl *Controller) DefineRoutes(r gin.IRouter) {
-	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	r.GET("*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 }

@@ -15,8 +15,10 @@ func InitializeRouter(container *dependencies.Container) *gin.Engine {
 
 	ctrls := buildControllers(container)
 
+	v1 := r.Group(apiv1.BasePath)
 	for i := range ctrls {
-		ctrls[i].DefineRoutes(r)
+		controllerGroup := v1.Group(ctrls[i].GetRelativePath())
+		ctrls[i].DefineRoutes(controllerGroup)
 	}
 
 	return r
