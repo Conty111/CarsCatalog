@@ -7,7 +7,6 @@ import (
 	"github.com/gobuffalo/envy"
 )
 
-// TODO: remove constants from initializers
 const (
 	// HTTPServerAddrEnv is an environment variable name for HTTP server address
 	HTTPServerAddrEnv = "HTTP_SERVER_ADDR"

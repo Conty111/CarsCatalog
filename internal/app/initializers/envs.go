@@ -5,7 +5,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-// InitializeEnvs intializes envy
+// InitializeEnvs initializes environment variables
 func InitializeEnvs() {
 	if err := envy.Load(); err != nil {
 		log.Info().Err(err).Msg("can not load .env file")

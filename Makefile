@@ -18,9 +18,9 @@ stop-docker-compose-test:
 	docker-compose -f docker-compose-test.yml down
 
 test-all:
-	$(MAKE) start-docker-compose-test
+	#$(MAKE) start-docker-compose-test
 	go test -v ./...
-	${MAKE} stop-docker-compose-test
+	#${MAKE} stop-docker-compose-test
 
 .PHONY: build
 build:

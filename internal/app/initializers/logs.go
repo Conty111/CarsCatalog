@@ -9,7 +9,6 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-// TODO: logger initialize with config, not constants
 const (
 	// LogLevelEnv is an environment variable name for LOG_LEVEL
 	LogLevelEnv = "LOG_LEVEL"

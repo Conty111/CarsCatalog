@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"gorm.io/gorm"
 	"net/http"
 
 	"github.com/Conty111/CarsCatalog/internal/app/dependencies"
@@ -12,6 +13,7 @@ import (
 // Application is a main struct for the application that contains general information
 type Application struct {
 	httpServer *http.Server
+	db         *gorm.DB
 	Container  *dependencies.Container
 }
 
