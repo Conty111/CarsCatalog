@@ -47,6 +47,7 @@ func (a *Application) Start(ctx context.Context, cli bool) {
 
 // Stop stops application services
 func (a *Application) Stop() (err error) {
+	log.Info().Msg("gracefully stopping")
 	return a.httpServer.Shutdown(context.TODO())
 }
 

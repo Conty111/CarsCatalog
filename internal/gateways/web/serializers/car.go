@@ -6,26 +6,49 @@ import (
 )
 
 type CarInfo struct {
-	ID     string        `jsonapi:"ID"`
-	RegNum string        `jsonapi:"regNum"`
-	Mark   string        `jsonapi:"mark"`
-	Model  string        `jsonapi:"model"`
-	Year   int           `jsonapi:"year"`
-	Owner  user.UserInfo `jsonapi:"owner"`
+	ID         string `jsonapi:"ID"`
+	Attributes struct {
+		RegNum string `jsonapi:"regNum"`
+		Mark   string `jsonapi:"mark"`
+		Model  string `jsonapi:"model"`
+		Year   int    `jsonapi:"year"`
+	} `jsonapi:"attributes"`
+	Relationships struct {
+		Owner struct {
+			Data user.UserInfo `jsonapi:"data"`
+		} `jsonapi:"owner"`
+	} `jsonapi:"relationships"`
 }
 
 func SerializeCarInfo(carModel *models.Car) *CarInfo {
-	return &CarInfo{
-		ID:     carModel.ID.String(),
-		Model:  carModel.Model,
-		Mark:   carModel.Mark,
-		RegNum: carModel.RegNum,
-		Year:   int(carModel.Year),
-		Owner: user.UserInfo{
-			ID:         carModel.OwnerID.String(),
-			Name:       carModel.Owner.Name,
-			Surname:    carModel.Owner.Surname,
-			Patronymic: *carModel.Owner.Patronymic,
+	if carModel == nil {
+		return nil
+	}
+
+	carInfo := &CarInfo{
+		ID: carModel.ID.String(),
+		Relationships: struct {
+			Owner struct {
+				Data user.UserInfo `jsonapi:"data"`
+			} `jsonapi:"owner"`
+		}{
+			Owner: struct {
+				Data user.UserInfo `jsonapi:"data"`
+			}{
+				Data: user.UserInfo{
+					ID:         carModel.Owner.ID.String(),
+					Name:       carModel.Owner.Name,
+					Surname:    carModel.Owner.Surname,
+					Patronymic: *carModel.Owner.Patronymic,
+				},
+			},
 		},
 	}
+
+	carInfo.Attributes.RegNum = carModel.RegNum
+	carInfo.Attributes.Mark = carModel.Mark
+	carInfo.Attributes.Model = carModel.Model
+	carInfo.Attributes.Year = int(carModel.Year)
+
+	return carInfo
 }

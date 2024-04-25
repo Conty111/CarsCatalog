@@ -1,4 +1,4 @@
-PROJECT_PKG = github.com/wajox/gobase
+PROJECT_PKG = github.com/Conty111/CarsCatalog
 BUILD_DIR = build
 
 VERSION ?=$(shell git describe --tags --exact-match 2>/dev/null || git symbolic-ref -q --short HEAD)
@@ -10,6 +10,12 @@ LDFLAGS += -s -w
 
 # inject build info
 LDFLAGS += -X ${PROJECT_PKG}/internal/app/build.Version=${VERSION} -X ${PROJECT_PKG}/internal/app/build.CommitHash=${COMMIT_HASH} -X ${PROJECT_PKG}/internal/app/build.BuildDate=${BUILD_DATE}
+
+run-external-API:
+	go run ./test/externalAPIserver.go
+
+run:
+	go run ./cmd/app/main.go serve
 
 start-docker-compose-test:
 	docker-compose -f docker-compose-test.yml up -d
@@ -36,7 +42,8 @@ swagger:
 	swag init --parseDependency -g cmd/app/main.go --output=./api
 
 install-tools:
-	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.33.0
+#	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.33.0
+	go install github.com/google/wire/cmd/wire@latest
 	go get github.com/google/wire/cmd/wire
 	go get -u github.com/onsi/ginkgo/ginkgo
 	go get -u github.com/swaggo/swag/cmd/swag

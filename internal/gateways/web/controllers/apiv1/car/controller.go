@@ -9,6 +9,7 @@ import (
 	"github.com/Conty111/CarsCatalog/internal/models"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github.com/rs/zerolog/log"
 	"net/http"
 )
 
@@ -57,14 +58,25 @@ func (ctrl *Controller) GetCarsList(ctx *gin.Context) {
 	filters := helpers.ParseCarFilters(ctx)
 	pag := helpers.ParsePagination(ctx)
 
+	log.Debug().
+		Str("endpoint", "GetCarsList").
+		Any("pagination", pag).
+		Any("filters", filters).
+		Msg("parsed filter and pagination")
+
 	carsData, lastOffset, err := ctrl.Service.GetCars(pag, filters)
 	if err != nil {
 		render.WriteErrorResponse(ctx, err)
 		return
 	}
-	var pagData *helpers.PaginationData[*serializers.CarInfo]
 
-	pagData.Data = make([]*serializers.CarInfo, len(carsData))
+	log.Debug().
+		Str("endpoint", "GetCarsList").
+		Msg("got list of cars")
+
+	var pagData helpers.PaginationData
+
+	pagData.Data = make([]interface{}, len(carsData))
 	for i := range carsData {
 		pagData.Data[i] = serializers.SerializeCarInfo(&carsData[i])
 	}
@@ -91,7 +103,11 @@ func (ctrl *Controller) GetCarsList(ctx *gin.Context) {
 		)
 	}
 
-	render.JSONAPIPayload(ctx, http.StatusOK, pagData)
+	log.Debug().
+		Str("endpoint", "GetCarsList").
+		Msg("calculated pagination")
+
+	render.JSONAPIPayload(ctx, http.StatusOK, &pagData)
 }
 
 // GetCar godoc

@@ -88,17 +88,19 @@ func (s *CarService) CreateCars(regNums []string) error {
 }
 
 func (s *CarService) GetCars(pag *helpers.PaginationParams, filters *models.CarFilter) ([]models.Car, int64, error) {
+	log.Debug().Str("Service", "CarService").Msg("called GetCars")
 	cars, err := s.CarRepo.GetCars(int(pag.Offset), int(pag.Limit), filters)
 	if err != nil {
 		log.Error().Err(err).Msg("error while getting cars from database")
 		return nil, 0, err
 	}
+	log.Debug().Any("cars", cars).Msg("got cars from database")
 	lastOffset, err := s.CarRepo.GetLastOffset(filters)
 	if err != nil {
 		log.Error().Err(err).Msg("error while getting count of cars")
 		return nil, 0, err
 	}
-
+	log.Debug().Int64("lastOffset", lastOffset).Msg("got lastOffset from database")
 	return cars, lastOffset, nil
 }
 

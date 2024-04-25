@@ -34,7 +34,7 @@ func JSONAPIPayload(ctx *gin.Context, statusCode int, payload interface{}) {
 	ctx.Status(statusCode)
 
 	if err := jsonapi.MarshalPayload(ctx.Writer, payload); err != nil {
-		log.Error().Err(err).Msg("jsonapi.MarshalPayload failed")
+		log.Error().Any("payload", payload).Err(err).Msg("jsonapi.MarshalPayload failed")
 
 		ctx.AbortWithStatus(http.StatusInternalServerError)
 		return

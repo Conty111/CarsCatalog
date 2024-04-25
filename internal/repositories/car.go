@@ -19,7 +19,7 @@ func NewCarRepository(db *gorm.DB) *CarRepository {
 
 func (r *CarRepository) GetByID(id uuid.UUID) (*models.Car, error) {
 	var car models.Car
-	res := r.db.Model(car).
+	res := r.db.Model(&car).
 		Preload(clause.Associations).
 		Where("id = ?", id).
 		First(&car)
@@ -34,7 +34,9 @@ func (r *CarRepository) GetByID(id uuid.UUID) (*models.Car, error) {
 }
 
 func (r *CarRepository) GetLastOffset(filters *models.CarFilter) (int64, error) {
-	tx := setFilters(r.db.Model(models.Car{}), filters)
+	tx := r.db.Model(&models.Car{})
+
+	setFilters(tx, filters)
 
 	var totalCount int64
 	err := tx.Count(&totalCount).Error
@@ -46,44 +48,51 @@ func (r *CarRepository) GetLastOffset(filters *models.CarFilter) (int64, error) 
 
 func (r *CarRepository) GetCars(offset int, limit int, filters *models.CarFilter) ([]models.Car, error) {
 	var cars []models.Car
-	tx := setFilters(r.db.Model(models.Car{}), filters)
+	tx := r.db.Model(&models.Car{})
+	setFilters(tx, filters)
 	err := tx.
 		Preload(clause.Associations).
 		Offset(offset).
 		Limit(limit).
 		Find(&cars).
 		Error
-
 	if err != nil {
 		return nil, err
 	}
 	return cars, nil
 }
 
-func setFilters(tx *gorm.DB, filters *models.CarFilter) *gorm.DB {
-	tx.Where("model LIKE '%?%'", filters.Model)
-	tx.Where("mark LIKE '%?%'", filters.Mark)
-	tx.Where("reg_num LIKE '%?%'", filters.RegNum)
-	tx.Where("year >= ?", filters.MinYear)
-	if filters.MaxYear > filters.MinYear {
-		tx.Where("year =< ?", filters.MaxYear)
+func setFilters(tx *gorm.DB, filters *models.CarFilter) {
+	if filters.Model != "" {
+		tx.Where("model LIKE ?", "%"+filters.Model+"%")
 	}
-	return tx
+	if filters.Mark != "" {
+		tx.Where("mark LIKE ?", "%"+filters.Mark+"%")
+	}
+	if filters.RegNum != "" {
+		tx.Where("reg_num LIKE ?", "%"+filters.RegNum+"%")
+	}
+	if filters.MinYear >= 0 {
+		tx.Where("year >= ?", filters.MinYear)
+	}
+	if filters.MaxYear > filters.MinYear {
+		tx.Where("year <= ?", filters.MaxYear)
+	}
 }
 
 func (r *CarRepository) DeleteByID(id uuid.UUID) error {
 	car := models.Car{BaseModel: models.BaseModel{ID: id}}
-	return r.db.Model(models.Car{}).Delete(&car).Error
+	return r.db.Model(&models.Car{}).Delete(&car).Error
 }
 
 func (r *CarRepository) UpdateCar(id uuid.UUID, updates interface{}) error {
 	return r.db.
-		Model(models.Car{}).
+		Model(&models.Car{}).
 		Where("id = ?", id).
 		Updates(updates).
 		Error
 }
 
 func (r *CarRepository) CreateCars(cars []*models.Car) error {
-	return r.db.Model(models.Car{}).Create(cars).Error
+	return r.db.Model(&models.Car{}).Create(cars).Error
 }

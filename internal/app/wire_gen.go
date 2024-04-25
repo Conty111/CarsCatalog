@@ -18,24 +18,24 @@ import (
 // Injectors from wire.go:
 
 func BuildApplication() (*Application, error) {
-	info := initializers.InitializeBuildInfo()
 	configuration := configs.GetConfig()
-	carManager := _wireCarRepositoryValue
+	httpServerConfig := configuration.HTTPServer
+	info := initializers.InitializeBuildInfo()
+	db := initializers.InitializeDatabase(configuration)
+	carRepository := repositories.NewCarRepository(db)
 	client := external_api.NewClient(configuration)
-	userProvider := _wireUserRepositoryValue
-	service := services.NewCarService(carManager, client, userProvider)
+	userRepository := repositories.NewUserRepository(db)
+	service := services.NewCarService(carRepository, client, userRepository)
 	container := &dependencies.Container{
 		BuildInfo:  info,
 		Config:     configuration,
 		CarService: service,
 	}
 	engine := initializers.InitializeRouter(container)
-	httpServerConfig := initializers.InitializeHTTPServerConfig(engine)
-	server, err := initializers.InitializeHTTPServer(httpServerConfig)
+	server, err := initializers.InitializeHTTPServer(httpServerConfig, engine)
 	if err != nil {
 		return nil, err
 	}
-	db := initializers.InitializeDatabase(configuration)
 	application := &Application{
 		httpServer: server,
 		db:         db,
@@ -43,8 +43,3 @@ func BuildApplication() (*Application, error) {
 	}
 	return application, nil
 }
-
-var (
-	_wireCarRepositoryValue  = new(repositories.CarRepository)
-	_wireUserRepositoryValue = new(repositories.UserRepository)
-)

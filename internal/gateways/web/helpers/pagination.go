@@ -19,11 +19,11 @@ type PaginationParams struct {
 	Offset uint
 }
 
-type PaginationData[T any] struct {
-	NextPage     string `jsonapi:"next_page"`
-	PreviousPage string `jsonapi:"previous_page"`
-	LastOffset   int64  `jsonapi:"last_offset"`
-	Data         []T    `jsonapi:"data"`
+type PaginationData struct {
+	NextPage     string        `jsonapi:"nextPage"`
+	PreviousPage string        `jsonapi:"previousPage"`
+	LastOffset   int64         `jsonapi:"lastOffset"`
+	Data         []interface{} `jsonapi:"data"`
 }
 
 func ParsePagination(ctx *gin.Context) *PaginationParams {

@@ -48,7 +48,7 @@ func (r *UserRepository) CreateUser(user *models.User) error {
 
 func (r *UserRepository) UpdateByID(id uuid.UUID, updates interface{}) error {
 	return r.db.
-		Model(models.User{}).
+		Model(&models.User{}).
 		Where("id = ?", id).
 		Updates(updates).
 		Error
@@ -59,7 +59,7 @@ func (r *UserRepository) DeleteByID(id uuid.UUID) error {
 	user.ID = id
 
 	return r.db.
-		Model(models.User{}).
+		Model(&models.User{}).
 		Delete(&user).
 		Error
 }
