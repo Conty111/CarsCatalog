@@ -35,17 +35,17 @@ func NewCarService(
 	}
 }
 
-func (s *CarService) CreateCars(regNums []string) ([]*models.Car, error) {
+func (s *CarService) CreateCars(regNums []string) error {
 	cars := make([]*models.Car, len(regNums))
 	for i, regNum := range regNums {
 		if !s.re.MatchString(regNum) {
 			log.Error().Str("regNum", regNum).Msg("reg num is not in valid")
-			return nil, client_errors.NewInvalidRegNumError(regNum)
+			return client_errors.NewInvalidRegNumError(regNum)
 		}
 		info, err := s.CarAPI.GetCarInfo(regNum)
 		if err != nil {
 			log.Error().Err(err).Str("regNum", regNum).Msg("error while getting info from external API")
-			return nil, err
+			return err
 		}
 		user, err := s.UserProvider.GetByFullName(
 			info.Owner.Name,
@@ -61,7 +61,7 @@ func (s *CarService) CreateCars(regNums []string) ([]*models.Car, error) {
 			err = s.UserProvider.CreateUser(&newUser)
 			if err != nil {
 				log.Error().Err(err).Msg("error while creating user")
-				return nil, err
+				return err
 			}
 			user = &newUser
 
@@ -71,7 +71,7 @@ func (s *CarService) CreateCars(regNums []string) ([]*models.Car, error) {
 				Str("surname", info.Owner.Surname).
 				Str("patronymic", info.Owner.Patronymic).
 				Msg("error while finding user in database")
-			return nil, err
+			return err
 		}
 		cars[i] = &models.Car{
 			RegNum:  regNum,
@@ -82,11 +82,7 @@ func (s *CarService) CreateCars(regNums []string) ([]*models.Car, error) {
 			Owner:   user,
 		}
 	}
-	err := s.CarRepo.CreateCars(cars)
-	if err != nil {
-		return nil, err
-	}
-	return cars, nil
+	return s.CarRepo.CreateCars(cars)
 }
 
 func (s *CarService) GetCars(pag *helpers.PaginationParams, filters *models.CarFilter) ([]models.Car, int64, error) {

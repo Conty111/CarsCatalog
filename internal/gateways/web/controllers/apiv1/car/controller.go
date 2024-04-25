@@ -1,9 +1,11 @@
 package car
 
 import (
+	"fmt"
 	"github.com/Conty111/CarsCatalog/internal/gateways/web/controllers/apiv1"
 	"github.com/Conty111/CarsCatalog/internal/gateways/web/helpers"
 	"github.com/Conty111/CarsCatalog/internal/gateways/web/render"
+	"github.com/Conty111/CarsCatalog/internal/gateways/web/serializers"
 	"github.com/Conty111/CarsCatalog/internal/models"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -16,7 +18,7 @@ var (
 )
 
 type Service interface {
-	CreateCars(regNums []string) ([]*models.Car, error)
+	CreateCars(regNums []string) error
 	GetCars(pag *helpers.PaginationParams, filters *models.CarFilter) ([]models.Car, int64, error)
 	GetCarByID(id uuid.UUID) (*models.Car, error)
 	UpdateCarByID(id uuid.UUID, upd *helpers.CarUpdates) error
@@ -55,35 +57,141 @@ func (ctrl *Controller) GetCarsList(ctx *gin.Context) {
 	filters := helpers.ParseCarFilters(ctx)
 	pag := helpers.ParsePagination(ctx)
 
-	data, err := ctrl.Service.GetCars(pag, filters)
+	carsData, lastOffset, err := ctrl.Service.GetCars(pag, filters)
 	if err != nil {
 		render.WriteErrorResponse(ctx, err)
 		return
 	}
-	//var pagData *helpers.PaginationData[*car.CarInfo]
-	//pagData.LastOffset = lastOffset
-	//pagData.Data = make([]*car.CarInfo, len(cars))
-	//
-	//for i := range cars {
-	//	pagData.Data[i] = &car.CarInfo{
-	//		ID:     cars[i].ID.String(),
-	//		Model:  cars[i].Model,
-	//		Mark:   cars[i].Mark,
-	//		RegNum: cars[i].RegNum,
-	//		Year:   int(cars[i].Year),
-	//		Owner: user.UserInfo{
-	//			ID:         cars[i].OwnerID.String(),
-	//			Name:       cars[i].Owner.Name,
-	//			Surname:    cars[i].Owner.Surname,
-	//			Patronymic: *cars[i].Owner.Patronymic,
-	//		},
-	//	}
-	//}
+	var pagData *helpers.PaginationData[*serializers.CarInfo]
 
-	render.JSONAPIPayload(ctx, http.StatusOK, data)
+	pagData.Data = make([]*serializers.CarInfo, len(carsData))
+	for i := range carsData {
+		pagData.Data[i] = serializers.SerializeCarInfo(&carsData[i])
+	}
+
+	pagData.LastOffset = lastOffset
+
+	nextPage := pag.Offset + pag.Limit
+	if int64(nextPage) < lastOffset {
+		pagData.NextPage = fmt.Sprintf(
+			"%s/list?offset=%dlimit=%d",
+			ctrl.GetRelativePath(),
+			nextPage,
+			pag.Limit,
+		)
+	}
+
+	prevPage := pag.Offset - pag.Limit
+	if prevPage > 0 {
+		pagData.PreviousPage = fmt.Sprintf(
+			"%s/list?offset=%d&limit=%d",
+			ctrl.GetRelativePath(),
+			prevPage,
+			pag.Limit,
+		)
+	}
+
+	render.JSONAPIPayload(ctx, http.StatusOK, pagData)
+}
+
+// GetCar godoc
+// @Summary Get Car
+// @Description get car by id
+// @ID get-car
+// @Accept json
+// @Produce json
+// @Success 200 {object} ResponseDoc
+// @Router /api/v1/car/:carID [get]
+func (ctrl *Controller) GetCar(ctx *gin.Context) {
+	carID, err := uuid.Parse(ctx.Param("carID"))
+	if err != nil {
+		render.WriteErrorResponse(ctx, err)
+		return
+	}
+	carModel, err := ctrl.Service.GetCarByID(carID)
+	if err != nil {
+		render.WriteErrorResponse(ctx, err)
+		return
+	}
+
+	body := serializers.SerializeCarInfo(carModel)
+
+	render.JSONAPIPayload(ctx, http.StatusOK, body)
+}
+
+func (ctrl *Controller) CreateCars(ctx *gin.Context) {
+	var body struct {
+		RegNums []string `json:"regNums"`
+	}
+	if err := ctx.ShouldBind(&body); err != nil {
+		render.WriteErrorResponse(ctx, err)
+		return
+	}
+	err := ctrl.Service.CreateCars(body.RegNums)
+	if err != nil {
+		render.WriteErrorResponse(ctx, err)
+		return
+	}
+	render.JSONAPIPayload(ctx, http.StatusCreated, &MsgResponse{
+		Message: "cars successfully created",
+		Status:  "OK",
+	})
+}
+
+func (ctrl *Controller) DeleteCar(ctx *gin.Context) {
+	carID, err := uuid.Parse(ctx.Param("carID"))
+	if err != nil {
+		render.WriteErrorResponse(ctx, err)
+		return
+	}
+	err = ctrl.Service.DeleteCarByID(carID)
+	if err != nil {
+		render.WriteErrorResponse(ctx, err)
+		return
+	}
+	render.JSONAPIPayload(ctx, http.StatusOK, &MsgResponse{
+		Message: "car successfully deleted",
+		Status:  "OK",
+	})
+}
+
+// UpdateCar godoc
+// @Summary Update Car
+// @Description update car by id
+// @ID update-car
+// @Accept json
+// @Produce json
+// @Success 200 {object} MsgResponse
+// @Router /api/v1/car/:carID [patch]
+func (ctrl *Controller) UpdateCar(ctx *gin.Context) {
+	carID, err := uuid.Parse(ctx.Param("carID"))
+	if err != nil {
+		render.WriteErrorResponse(ctx, err)
+		return
+	}
+
+	var upd helpers.CarUpdates
+	if err = ctx.Bind(&upd); err != nil {
+		render.WriteErrorResponse(ctx, err)
+		return
+	}
+
+	err = ctrl.Service.UpdateCarByID(carID, &upd)
+	if err != nil {
+		render.WriteErrorResponse(ctx, err)
+		return
+	}
+	render.JSONAPIPayload(ctx, http.StatusOK, &MsgResponse{
+		Message: "car successfully updated",
+		Status:  "OK",
+	})
 }
 
 // DefineRoutes adds controller routes to the router
 func (ctrl *Controller) DefineRoutes(r gin.IRouter) {
 	r.GET("/list", ctrl.GetCarsList)
+	r.GET("/:carID", ctrl.GetCar)
+	r.POST("", ctrl.CreateCars)
+	r.DELETE("/:carID", ctrl.DeleteCar)
+	r.PATCH("/:carID", ctrl.UpdateCar)
 }
