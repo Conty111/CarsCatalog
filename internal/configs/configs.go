@@ -65,12 +65,12 @@ func getAPIClientConfig() *APIClientConfiguration {
 		log.Panic().Err(err).Msg("cannot parse API_TIMEOUT_RESPONSE")
 	}
 	apiClientCfg.TimeoutResponse = duration
-	duration, err = time.ParseDuration(envy.Get("API_TIME_TO_RETRY", "5s"))
-	if err != nil {
-		log.Panic().Err(err).Msg("cannot parse API_TIME_TO_RETRY")
-	}
-	apiClientCfg.TimeToRetry = duration
-	apiClientCfg.RetryEnabled = envy.Get("API_RETRY_ENABLED", "false") == "true"
+	//duration, err = time.ParseDuration(envy.Get("API_TIME_TO_RETRY", "5s"))
+	//if err != nil {
+	//	log.Panic().Err(err).Msg("cannot parse API_TIME_TO_RETRY")
+	//}
+	//apiClientCfg.TimeToRetry = duration
+	//apiClientCfg.RetryEnabled = envy.Get("API_RETRY_ENABLED", "false") == "true"
 
 	return apiClientCfg
 }

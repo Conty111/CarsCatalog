@@ -2,8 +2,10 @@ package external_api
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
-	"io"
+	"github.com/Conty111/CarsCatalog/internal/configs"
+	"github.com/rs/zerolog/log"
 	"net/http"
 )
 
@@ -23,33 +25,60 @@ type PeopleData struct {
 	Patronymic string `json:"patronymic"`
 }
 
-type APIClient struct {
-	Address string
+type Client struct {
+	defaultHeader map[string]string
+	client        *http.Client
+	url           string
 }
 
-// GetCarInfo возвращает информацию о машине по её регистрационному номеру
-func (a *APIClient) GetCarInfo(regNum string) (*CarData, error) {
-	url := fmt.Sprintf("%s/info?regNum=%s", a.Address, regNum)
+func NewClient(cfg *configs.Configuration) *Client {
+	var apiClient Client
 
-	resp, err := http.Get(url)
+	apiClient.client = &http.Client{Timeout: cfg.APIClient.TimeoutResponse}
+	apiClient.defaultHeader = cfg.APIClient.DefaultHeader
+	apiClient.url = fmt.Sprintf("%s://%s:%s",
+		cfg.APIClient.Scheme, cfg.APIClient.ServerAddress, cfg.APIClient.ServerPort)
+
+	return &apiClient
+}
+
+func (c *Client) GetCarInfo(regNum string) (*CarData, error) {
+	req, err := http.NewRequest(http.MethodGet, c.url+"/info?regNum="+regNum, nil)
 	if err != nil {
-		return nil, err
+		log.Error().
+			Err(err).
+			Msg("failed to create request")
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+	for key, value := range c.defaultHeader {
+		req.Header.Set(key, value)
+	}
+
+	resp, err := c.client.Do(req)
+	if err != nil {
+		log.Error().
+			Err(err).
+			Msg("failed to send request")
+		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
 	defer resp.Body.Close()
 
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("API request failed with status: %d", resp.StatusCode)
+		log.Error().
+			Int("statusCode", resp.StatusCode).
+			Str("status", http.StatusText(resp.StatusCode)).
+			Msg("failed to get car info")
+		return nil, errors.New("failed to get car info")
 	}
 
-	var carData CarData
-	if err := json.Unmarshal(body, &carData); err != nil {
-		return nil, err
+	var car CarData
+	err = json.NewDecoder(resp.Body).Decode(&car)
+	if err != nil {
+		log.Error().
+			Err(err).
+			Msg("failed to get car info")
+		return nil, fmt.Errorf("failed to decode body: %w", err)
 	}
 
-	return &carData, nil
+	return &car, nil
 }

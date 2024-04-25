@@ -1,7 +1,6 @@
 package interfaces
 
 import (
-	"github.com/Conty111/CarsCatalog/internal/external_api"
 	"github.com/Conty111/CarsCatalog/internal/models"
 	"github.com/google/uuid"
 )
@@ -23,11 +22,8 @@ type UserProvider interface {
 
 type UserManager interface {
 	GetByID(id uuid.UUID) (*models.User, error)
-	DeleteByID(id uuid.UUID) error
-	UpdateCar(id uuid.UUID, updates interface{}) error
+	GetByFullName(name, surname, patronymic string) (*models.User, error)
 	CreateUser(user *models.User) error
-}
-
-type CarAPIClient interface {
-	GetCarInfo(regNum string) (*external_api.CarData, error)
+	UpdateByID(id uuid.UUID, updates interface{}) error
+	DeleteByID(id uuid.UUID) error
 }

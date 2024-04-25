@@ -13,8 +13,8 @@ type APIClientConfiguration struct {
 	ServerAddress   string
 	ServerPort      string
 	TimeoutResponse time.Duration
-	TimeToRetry     time.Duration
-	RetryEnabled    bool
+	//TimeToRetry     time.Duration
+	//RetryEnabled    bool
 }
 
 type Configuration struct {

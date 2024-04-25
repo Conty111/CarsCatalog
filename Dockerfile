@@ -33,5 +33,3 @@ COPY --from=builder /src/docs/api ./docs/api
 COPY --from=builder /src/db/migrations ./db/migrations
 
 COPY --from=builder /src/build/app .
-
-CMD ["./app", "s"]

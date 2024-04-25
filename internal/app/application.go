@@ -25,7 +25,15 @@ func InitializeApplication() (*Application, error) {
 		return nil, err
 	}
 
-	return BuildApplication()
+	app, err := BuildApplication()
+	if err != nil {
+		return nil, err
+	}
+	err = initializers.InitializeMigrations(app.db)
+	if err != nil {
+		return nil, err
+	}
+	return app, nil
 }
 
 // Start starts application services

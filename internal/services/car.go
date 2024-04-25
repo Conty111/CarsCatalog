@@ -3,6 +3,8 @@ package services
 import (
 	"errors"
 	"github.com/Conty111/CarsCatalog/internal/client_errors"
+	"github.com/Conty111/CarsCatalog/internal/external_api"
+	"github.com/Conty111/CarsCatalog/internal/gateways/web/controllers/apiv1/car"
 	"github.com/Conty111/CarsCatalog/internal/gateways/web/helpers"
 	"github.com/Conty111/CarsCatalog/internal/interfaces"
 	"github.com/Conty111/CarsCatalog/internal/models"
@@ -17,14 +19,14 @@ const pattern = "^[ABEKMHOPCTYXАВЕКМНОРСТУХ]{1}\\d{3}[ABEKMHOPCTYXА
 type CarService struct {
 	CarRepo      interfaces.CarManager
 	UserProvider interfaces.UserProvider
-	CarAPI       interfaces.CarAPIClient
+	CarAPI       *external_api.Client
 	re           *regexp.Regexp
 }
 
 func NewCarService(
 	repo interfaces.CarManager,
-	apiClient interfaces.CarAPIClient,
-	userProvider interfaces.UserProvider) *CarService {
+	apiClient *external_api.Client,
+	userProvider interfaces.UserProvider) car.Service {
 
 	re := regexp.MustCompile(pattern)
 	return &CarService{

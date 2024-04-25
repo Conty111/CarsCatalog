@@ -10,6 +10,9 @@ import (
 	"github.com/Conty111/CarsCatalog/internal/app/dependencies"
 	"github.com/Conty111/CarsCatalog/internal/app/initializers"
 	"github.com/Conty111/CarsCatalog/internal/configs"
+	"github.com/Conty111/CarsCatalog/internal/external_api"
+	"github.com/Conty111/CarsCatalog/internal/repositories"
+	"github.com/Conty111/CarsCatalog/internal/services"
 )
 
 // Injectors from wire.go:
@@ -17,9 +20,14 @@ import (
 func BuildApplication() (*Application, error) {
 	info := initializers.InitializeBuildInfo()
 	configuration := configs.GetConfig()
+	carManager := _wireCarRepositoryValue
+	client := external_api.NewClient(configuration)
+	userProvider := _wireUserRepositoryValue
+	service := services.NewCarService(carManager, client, userProvider)
 	container := &dependencies.Container{
-		BuildInfo: info,
-		Config:    configuration,
+		BuildInfo:  info,
+		Config:     configuration,
+		CarService: service,
 	}
 	engine := initializers.InitializeRouter(container)
 	httpServerConfig := initializers.InitializeHTTPServerConfig(engine)
@@ -27,7 +35,7 @@ func BuildApplication() (*Application, error) {
 	if err != nil {
 		return nil, err
 	}
-	db := initializers.InitializeDatabase(container)
+	db := initializers.InitializeDatabase(configuration)
 	application := &Application{
 		httpServer: server,
 		db:         db,
@@ -35,3 +43,8 @@ func BuildApplication() (*Application, error) {
 	}
 	return application, nil
 }
+
+var (
+	_wireCarRepositoryValue  = new(repositories.CarRepository)
+	_wireUserRepositoryValue = new(repositories.UserRepository)
+)

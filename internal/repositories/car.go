@@ -22,7 +22,7 @@ func (r *CarRepository) GetByID(id uuid.UUID) (*models.Car, error) {
 	res := r.db.Model(car).
 		Preload(clause.Associations).
 		Where("id = ?", id).
-		Find(&car)
+		First(&car)
 
 	if res.Error != nil {
 		return nil, res.Error
