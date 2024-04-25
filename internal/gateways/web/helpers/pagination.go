@@ -3,11 +3,13 @@ package helpers
 import (
 	"github.com/Conty111/CarsCatalog/internal/client_errors"
 	"github.com/gin-gonic/gin"
+	"github.com/rs/zerolog/log"
 	"strconv"
 )
 
 const (
 	DefaultLimit   uint = 10
+	DefaultOffset  uint = 0
 	URLQueryLimit       = "limit"
 	URLQueryOffset      = "offset"
 )
@@ -17,14 +19,14 @@ type PaginationParams struct {
 	Offset uint
 }
 
-type PaginationData struct {
-	NextPage     string        `jsonapi:"next_page"`
-	PreviousPage string        `jsonapi:"previous_page"`
-	LastOffset   uint          `jsonapi:"last_offset"`
-	Data         []interface{} `jsonapi:"data"`
+type PaginationData[T any] struct {
+	NextPage     string `jsonapi:"next_page"`
+	PreviousPage string `jsonapi:"previous_page"`
+	LastOffset   int64  `jsonapi:"last_offset"`
+	Data         []T    `jsonapi:"data"`
 }
 
-func ParsePagination(ctx *gin.Context) (*PaginationParams, error) {
+func ParsePagination(ctx *gin.Context) *PaginationParams {
 	var pag PaginationParams
 
 	limit := ctx.Param(URLQueryLimit)
@@ -33,12 +35,14 @@ func ParsePagination(ctx *gin.Context) (*PaginationParams, error) {
 	} else {
 		lim, err := strconv.Atoi(limit)
 		if err != nil {
-			return nil, err
+			log.Error().Err(err).Msg("error while to parsing pagination")
+			pag.Limit = DefaultLimit
+		} else if lim <= 0 {
+			log.Error().Err(client_errors.ErrInvalidLimitParam).Msg("error while to parsing pagination")
+			pag.Limit = DefaultLimit
+		} else {
+			pag.Limit = uint(lim)
 		}
-		if lim <= 0 {
-			return nil, client_errors.ErrInvalidLimitParam
-		}
-		pag.Limit = uint(lim)
 	}
 
 	offset := ctx.Param(URLQueryOffset)
@@ -47,13 +51,15 @@ func ParsePagination(ctx *gin.Context) (*PaginationParams, error) {
 	} else {
 		offs, err := strconv.Atoi(offset)
 		if err != nil {
-			return nil, err
+			log.Error().Err(err).Msg("error while to parsing pagination")
+			pag.Offset = DefaultOffset
+		} else if offs < 0 {
+			log.Error().Err(client_errors.ErrInvalidLimitParam).Msg("error while to parsing pagination")
+			pag.Offset = DefaultOffset
+		} else {
+			pag.Offset = uint(offs)
 		}
-		if offs <= 0 {
-			return nil, client_errors.ErrInvalidLimitParam
-		}
-		pag.Offset = uint(offs)
 	}
 
-	return &pag, nil
+	return &pag
 }
