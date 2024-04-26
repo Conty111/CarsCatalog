@@ -3,7 +3,6 @@ package status
 import (
 	"github.com/Conty111/CarsCatalog/internal/app/build"
 	"github.com/Conty111/CarsCatalog/internal/gateways/web/controllers/apiv1"
-	"github.com/Conty111/CarsCatalog/internal/gateways/web/render"
 	"github.com/gin-gonic/gin"
 
 	"net/http"
@@ -43,7 +42,7 @@ func (ctrl *Controller) GetRelativePath() string {
 // @Success 200 {object} ResponseDoc
 // @Router /api/v1/status [get]
 func (ctrl *Controller) GetStatus(ctx *gin.Context) {
-	render.JSONAPIPayload(ctx, http.StatusOK, &Response{
+	ctx.JSON(http.StatusOK, &Response{
 		Status: http.StatusText(http.StatusOK),
 		Build:  ctrl.buildInfo,
 	})

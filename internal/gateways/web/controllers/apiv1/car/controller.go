@@ -74,18 +74,18 @@ func (ctrl *Controller) GetCarsList(ctx *gin.Context) {
 		Str("endpoint", "GetCarsList").
 		Msg("got list of cars")
 
-	var pagData helpers.PaginationData
+	var pagData helpers.PaginationResponse
 
 	pagData.Data = make([]interface{}, len(carsData))
 	for i := range carsData {
 		pagData.Data[i] = serializers.SerializeCarInfo(&carsData[i])
 	}
 
-	pagData.LastOffset = lastOffset
+	pagData.PaginationMeta.LastOffset = lastOffset
 
 	nextPage := pag.Offset + pag.Limit
 	if int64(nextPage) < lastOffset {
-		pagData.NextPage = fmt.Sprintf(
+		pagData.PaginationMeta.NextPage = fmt.Sprintf(
 			"%s/list?offset=%dlimit=%d",
 			ctrl.GetRelativePath(),
 			nextPage,
@@ -95,7 +95,7 @@ func (ctrl *Controller) GetCarsList(ctx *gin.Context) {
 
 	prevPage := pag.Offset - pag.Limit
 	if prevPage > 0 {
-		pagData.PreviousPage = fmt.Sprintf(
+		pagData.PaginationMeta.PreviousPage = fmt.Sprintf(
 			"%s/list?offset=%d&limit=%d",
 			ctrl.GetRelativePath(),
 			prevPage,
@@ -107,7 +107,7 @@ func (ctrl *Controller) GetCarsList(ctx *gin.Context) {
 		Str("endpoint", "GetCarsList").
 		Msg("calculated pagination")
 
-	render.JSONAPIPayload(ctx, http.StatusOK, &pagData)
+	ctx.JSON(http.StatusOK, &pagData)
 }
 
 // GetCar godoc
@@ -132,7 +132,7 @@ func (ctrl *Controller) GetCar(ctx *gin.Context) {
 
 	body := serializers.SerializeCarInfo(carModel)
 
-	render.JSONAPIPayload(ctx, http.StatusOK, body)
+	ctx.JSON(http.StatusOK, body)
 }
 
 func (ctrl *Controller) CreateCars(ctx *gin.Context) {
@@ -148,7 +148,7 @@ func (ctrl *Controller) CreateCars(ctx *gin.Context) {
 		render.WriteErrorResponse(ctx, err)
 		return
 	}
-	render.JSONAPIPayload(ctx, http.StatusCreated, &MsgResponse{
+	ctx.JSON(http.StatusCreated, &MsgResponse{
 		Message: "cars successfully created",
 		Status:  "OK",
 	})
@@ -165,7 +165,7 @@ func (ctrl *Controller) DeleteCar(ctx *gin.Context) {
 		render.WriteErrorResponse(ctx, err)
 		return
 	}
-	render.JSONAPIPayload(ctx, http.StatusOK, &MsgResponse{
+	ctx.JSON(http.StatusOK, &MsgResponse{
 		Message: "car successfully deleted",
 		Status:  "OK",
 	})
@@ -197,7 +197,7 @@ func (ctrl *Controller) UpdateCar(ctx *gin.Context) {
 		render.WriteErrorResponse(ctx, err)
 		return
 	}
-	render.JSONAPIPayload(ctx, http.StatusOK, &MsgResponse{
+	ctx.JSON(http.StatusOK, &MsgResponse{
 		Message: "car successfully updated",
 		Status:  "OK",
 	})

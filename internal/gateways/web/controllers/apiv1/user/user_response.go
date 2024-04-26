@@ -1,8 +1,8 @@
 package user
 
 type UserInfo struct {
-	ID         string `jsonapi:"ID"`
-	Name       string `jsonapi:"name"`
-	Surname    string `jsonapi:"surname"`
-	Patronymic string `jsonapi:"patronymic"`
+	ID         string `json:"ID"`
+	Name       string `json:"name"`
+	Surname    string `json:"surname"`
+	Patronymic string `json:"patronymic,omitempty"`
 }
