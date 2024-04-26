@@ -3,7 +3,9 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/bxcodec/faker/v3"
 	"log"
+	"math/rand"
 	"net/http"
 )
 
@@ -21,7 +23,13 @@ type People struct {
 	Patronymic string `json:"patronymic,omitempty"`
 }
 
+var (
+	marks = []string{"Lada", "BMW", "Mercedes", "Volga", "Toyota"}
+)
+
 func getInfoHandler(w http.ResponseWriter, r *http.Request) {
+	log.Println(r.URL, r.Method, r.UserAgent())
+
 	regNum := r.URL.Query().Get("regNum")
 	if regNum == "" {
 		http.Error(w, "regNum parameter is required", http.StatusBadRequest)
@@ -48,17 +56,15 @@ func getInfoHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func generateCarInfo(regNum string) Car {
-	// Here you can implement your logic to generate or fetch car information
-	// For simplicity, let's generate random data
 	return Car{
 		RegNum: regNum,
-		Mark:   "Lada",
-		Model:  "Vesta",
-		Year:   2002,
+		Mark:   marks[rand.Intn(len(marks))],
+		Model:  "some model",
+		Year:   rand.Intn(30) + 1990, // случайный год от 1990 до 2019
 		Owner: People{
-			Name:       "John",
-			Surname:    "Doe",
-			Patronymic: "Smith",
+			Name:       faker.Name(),
+			Surname:    faker.LastName(),
+			Patronymic: faker.FirstName(),
 		},
 	}
 }

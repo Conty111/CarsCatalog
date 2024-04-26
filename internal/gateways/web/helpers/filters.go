@@ -23,9 +23,9 @@ const (
 func ParseUserFilters(ctx *gin.Context) *models.UserFilter {
 	var userFilter models.UserFilter
 
-	userFilter.Name = ctx.Param(URLQueryUserName)
-	userFilter.Surname = ctx.Param(URLQueryUserSurname)
-	userFilter.Patronymic = ctx.Param(URLQueryUserPatronymic)
+	userFilter.Name = ctx.Query(URLQueryUserName)
+	userFilter.Surname = ctx.Query(URLQueryUserSurname)
+	userFilter.Patronymic = ctx.Query(URLQueryUserPatronymic)
 
 	return &userFilter
 }
@@ -33,10 +33,10 @@ func ParseUserFilters(ctx *gin.Context) *models.UserFilter {
 func ParseCarFilters(ctx *gin.Context) *models.CarFilter {
 	var carFilter models.CarFilter
 
-	carFilter.Model = ctx.Param(URLQueryCarModel)
-	carFilter.Mark = ctx.Param(URLQueryCarMark)
-	carFilter.RegNum = ctx.Param(URLQueryCarRegNum)
-	carFilter.Model = ctx.Param(URLQueryCarModel)
+	carFilter.Model = ctx.Query(URLQueryCarModel)
+	carFilter.Mark = ctx.Query(URLQueryCarMark)
+	carFilter.RegNum = ctx.Query(URLQueryCarRegNum)
+	carFilter.Model = ctx.Query(URLQueryCarModel)
 
 	minYear := ctx.Param(URLQueryCarMinYear)
 	if minYear != "" {

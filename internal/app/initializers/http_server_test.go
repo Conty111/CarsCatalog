@@ -1,6 +1,7 @@
 package initializers_test
 
 import (
+	"github.com/Conty111/CarsCatalog/internal/configs"
 	"github.com/gin-gonic/gin"
 
 	"github.com/Conty111/CarsCatalog/internal/gateways/web/router"
@@ -12,37 +13,19 @@ import (
 )
 
 var _ = Describe("HttpServer", func() {
-	Describe("InitializeHTTPServerConfig()", func() {
-		var (
-			r *gin.Engine
-		)
-
-		BeforeEach(func() {
-			r = router.NewRouter()
-		})
-
-		It("should initialize config for http server initializer", func() {
-			cfg := InitializeHTTPServerConfig(r)
-
-			Expect(cfg).NotTo(BeNil())
-			Expect(cfg.Router).To(Equal(r))
-			Expect(cfg.HTTPServerAddr).NotTo(BeEmpty())
-		})
-	})
-
 	Describe("InitializeHTTPServer()", func() {
 		var (
 			r   *gin.Engine
-			cfg *HTTPServerConfig
+			cfg *configs.HTTPServerConfig
 		)
 
 		BeforeEach(func() {
 			r = router.NewRouter()
-			cfg = InitializeHTTPServerConfig(r)
+			cfg = configs.GetConfig().HTTPServer
 		})
 
 		It("should initialize HTTP server", func() {
-			srv, err := InitializeHTTPServer(cfg)
+			srv, err := InitializeHTTPServer(cfg, r)
 
 			Expect(srv).NotTo(BeNil())
 			Expect(err).To(BeNil())

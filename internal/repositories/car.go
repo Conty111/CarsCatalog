@@ -1,8 +1,11 @@
 package repositories
 
 import (
+	"errors"
+	"github.com/Conty111/CarsCatalog/internal/client_errors"
 	"github.com/Conty111/CarsCatalog/internal/models"
 	"github.com/google/uuid"
+	"github.com/rs/zerolog/log"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -19,16 +22,17 @@ func NewCarRepository(db *gorm.DB) *CarRepository {
 
 func (r *CarRepository) GetByID(id uuid.UUID) (*models.Car, error) {
 	var car models.Car
-	res := r.db.Model(&car).
+	err := r.db.Model(&car).
 		Preload(clause.Associations).
 		Where("id = ?", id).
-		First(&car)
+		First(&car).
+		Error
 
-	if res.Error != nil {
-		return nil, res.Error
-	}
-	if res.RowsAffected == 0 {
-		return nil, CarNotFound
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, client_errors.NewCarNotFoundError(id)
+		}
+		return nil, err
 	}
 	return &car, nil
 }
@@ -59,18 +63,19 @@ func (r *CarRepository) GetCars(offset int, limit int, filters *models.CarFilter
 	if err != nil {
 		return nil, err
 	}
+	log.Debug().Msg("got cars from database successfully")
 	return cars, nil
 }
 
 func setFilters(tx *gorm.DB, filters *models.CarFilter) {
 	if filters.Model != "" {
-		tx.Where("model LIKE ?", "%"+filters.Model+"%")
+		tx.Where("model ILIKE ?", "%"+filters.Model+"%")
 	}
 	if filters.Mark != "" {
-		tx.Where("mark LIKE ?", "%"+filters.Mark+"%")
+		tx.Where("mark ILIKE ?", "%"+filters.Mark+"%")
 	}
 	if filters.RegNum != "" {
-		tx.Where("reg_num LIKE ?", "%"+filters.RegNum+"%")
+		tx.Where("reg_num ILIKE ?", "%"+filters.RegNum+"%")
 	}
 	if filters.MinYear >= 0 {
 		tx.Where("year >= ?", filters.MinYear)
@@ -82,17 +87,36 @@ func setFilters(tx *gorm.DB, filters *models.CarFilter) {
 
 func (r *CarRepository) DeleteByID(id uuid.UUID) error {
 	car := models.Car{BaseModel: models.BaseModel{ID: id}}
-	return r.db.Model(&models.Car{}).Delete(&car).Error
+
+	tx := r.db.Model(&models.Car{}).Delete(&car)
+	if tx.Error != nil {
+		if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
+			return client_errors.NewCarNotFoundError(id)
+		}
+	}
+	if tx.RowsAffected == 0 {
+		return client_errors.NewCarNotFoundError(id)
+	}
+	return nil
 }
 
 func (r *CarRepository) UpdateCar(id uuid.UUID, updates interface{}) error {
-	return r.db.
+	tx := r.db.
+		Debug().
 		Model(&models.Car{}).
 		Where("id = ?", id).
-		Updates(updates).
-		Error
+		Updates(updates)
+	if tx.Error != nil {
+		if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
+			return client_errors.NewCarNotFoundError(id)
+		}
+	}
+	if tx.RowsAffected == 0 {
+		return client_errors.NewCarNotFoundError(id)
+	}
+	return nil
 }
 
 func (r *CarRepository) CreateCars(cars []*models.Car) error {
-	return r.db.Model(&models.Car{}).Create(cars).Error
+	return r.db.Debug().Model(&models.Car{}).Create(cars).Error
 }

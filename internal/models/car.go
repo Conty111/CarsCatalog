@@ -8,7 +8,7 @@ import (
 // Car database model
 type Car struct {
 	BaseModel
-	RegNum  string    `gorm:"primaryKey"`
+	RegNum  string    `gorm:"primaryKey;uniqueIndex"`
 	Mark    string    `gorm:"column:mark"`
 	Model   string    `gorm:"column:model"`
 	Year    int32     `gorm:"column:year"`

@@ -29,11 +29,11 @@ func InitializeLogs() error {
 	zerolog.SetGlobalLevel(zerolog.Level(logLevel))
 
 	// json or human readable output
+	log.Logger.Level(zerolog.Level(logLevel))
 	if envy.Get(EnableJSONLogsEnv, "false") == "false" {
 		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 	}
 
-	// add filepath+row num to log(app/cmd/serve.go:37)
 	log.Logger = log.With().Caller().Logger()
 
 	return nil

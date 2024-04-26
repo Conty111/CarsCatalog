@@ -33,7 +33,7 @@ type PaginationMeta struct {
 func ParsePagination(ctx *gin.Context) *PaginationParams {
 	var pag PaginationParams
 
-	limit := ctx.Param(URLQueryLimit)
+	limit := ctx.Query(URLQueryLimit)
 	if limit == "" {
 		pag.Limit = DefaultLimit
 	} else {
@@ -49,7 +49,7 @@ func ParsePagination(ctx *gin.Context) *PaginationParams {
 		}
 	}
 
-	offset := ctx.Param(URLQueryOffset)
+	offset := ctx.Query(URLQueryOffset)
 	if offset == "" {
 		pag.Offset = 0
 	} else {

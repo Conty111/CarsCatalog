@@ -1,8 +1,7 @@
-package repositories
+package client_errors
 
 import "errors"
 
 var (
 	UserNotFound = errors.New("user not found")
-	CarNotFound  = errors.New("car not found")
 )

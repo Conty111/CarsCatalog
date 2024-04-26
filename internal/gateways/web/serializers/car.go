@@ -1,17 +1,23 @@
 package serializers
 
 import (
-	"github.com/Conty111/CarsCatalog/internal/gateways/web/controllers/apiv1/user"
 	"github.com/Conty111/CarsCatalog/internal/models"
 )
 
+type UserInfo struct {
+	ID         string `json:"ID"`
+	Name       string `json:"name"`
+	Surname    string `json:"surname"`
+	Patronymic string `json:"patronymic,omitempty"`
+}
+
 type CarInfo struct {
-	ID     string        `jsonapi:"primary,ID"`
-	RegNum string        `jsonapi:"attr,regNum"`
-	Mark   string        `jsonapi:"attr,mark"`
-	Model  string        `jsonapi:"attr,model"`
-	Year   int           `jsonapi:"attr,year"`
-	Owner  user.UserInfo `jsonapi:"relation,owner,omitempty"`
+	ID     string   `json:"ID"`
+	RegNum string   `json:"regNum"`
+	Mark   string   `json:"mark"`
+	Model  string   `json:"model"`
+	Year   int      `json:"year"`
+	Owner  UserInfo `json:"owner,omitempty"`
 }
 
 func SerializeCarInfo(c *models.Car) *CarInfo {
@@ -25,7 +31,7 @@ func SerializeCarInfo(c *models.Car) *CarInfo {
 		Model:  c.Model,
 		Mark:   c.Mark,
 		Year:   int(c.Year),
-		Owner: user.UserInfo{
+		Owner: UserInfo{
 			ID:         c.OwnerID.String(),
 			Name:       c.Owner.Name,
 			Surname:    c.Owner.Surname,

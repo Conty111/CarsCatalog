@@ -57,7 +57,6 @@ func getAPIClientConfig() *APIClientConfiguration {
 	apiClientCfg.Host = envy.Get("API_HOST", "localhost")
 	apiClientCfg.Scheme = envy.Get("API_SCHEME", "http")
 	apiClientCfg.DefaultHeader = getDefaultHeaders()
-	apiClientCfg.UserAgent = envy.Get("API_USER_AGENT", "cars-catalog-api-client")
 	apiClientCfg.ServerAddress = envy.Get("API_SERVER_ADDRESS", "localhost")
 	apiClientCfg.ServerPort = envy.Get("API_SERVER_PORT", "8081")
 	duration, err := time.ParseDuration(envy.Get("API_TIMEOUT_RESPONSE", "10s"))
@@ -93,5 +92,6 @@ func getHTTPServerConfig() *HTTPServerConfig {
 func getDefaultHeaders() map[string]string {
 	return map[string]string{
 		"Content-Type": "application/json",
+		"User-Agent":   envy.Get("API_USER_AGENT", "cars-api-client"),
 	}
 }

@@ -93,12 +93,19 @@ func (ctrl *Controller) GetCarsList(ctx *gin.Context) {
 		)
 	}
 
-	prevPage := pag.Offset - pag.Limit
-	if prevPage > 0 {
+	if pag.Offset > pag.Limit {
+		prevPage := pag.Offset - pag.Limit
 		pagData.PaginationMeta.PreviousPage = fmt.Sprintf(
 			"%s/list?offset=%d&limit=%d",
 			ctrl.GetRelativePath(),
 			prevPage,
+			pag.Limit,
+		)
+	} else if pag.Offset > 0 {
+		pagData.PaginationMeta.PreviousPage = fmt.Sprintf(
+			"%s/list?offset=%d&limit=%d",
+			ctrl.GetRelativePath(),
+			0,
 			pag.Limit,
 		)
 	}

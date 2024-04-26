@@ -8,9 +8,9 @@ import (
 	"github.com/Conty111/CarsCatalog/internal/gateways/web/helpers"
 	"github.com/Conty111/CarsCatalog/internal/interfaces"
 	"github.com/Conty111/CarsCatalog/internal/models"
-	"github.com/Conty111/CarsCatalog/internal/repositories"
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
+	"gorm.io/gorm"
 	"regexp"
 )
 
@@ -54,7 +54,13 @@ func (s *CarService) CreateCars(regNums []string) error {
 			info.Owner.Surname,
 			info.Owner.Patronymic,
 		)
-		if errors.Is(err, repositories.UserNotFound) {
+		if errors.Is(err, client_errors.UserNotFound) || errors.Is(err, gorm.ErrRecordNotFound) {
+			log.Info().
+				Str("name", info.Owner.Name).
+				Str("surname", info.Owner.Surname).
+				Str("patronymic", info.Owner.Patronymic).
+				Msg("user not found in database, creating new")
+
 			newUser := models.User{
 				Name:       info.Owner.Name,
 				Surname:    info.Owner.Surname,
@@ -88,13 +94,11 @@ func (s *CarService) CreateCars(regNums []string) error {
 }
 
 func (s *CarService) GetCars(pag *helpers.PaginationParams, filters *models.CarFilter) ([]models.Car, int64, error) {
-	log.Debug().Str("Service", "CarService").Msg("called GetCars")
 	cars, err := s.CarRepo.GetCars(int(pag.Offset), int(pag.Limit), filters)
 	if err != nil {
 		log.Error().Err(err).Msg("error while getting cars from database")
 		return nil, 0, err
 	}
-	log.Debug().Any("cars", cars).Msg("got cars from database")
 	lastOffset, err := s.CarRepo.GetLastOffset(filters)
 	if err != nil {
 		log.Error().Err(err).Msg("error while getting count of cars")
