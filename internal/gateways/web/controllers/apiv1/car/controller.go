@@ -132,6 +132,7 @@ func (ctrl *Controller) GetCarsList(ctx *gin.Context) {
 // @Param carID query string true "ID of the car"
 // @Success 200 {object} serializers.CarInfo "Success Car Info"
 // @Failure 400 {object} render.ErrResponse "Bad request"
+// @Failure 404 {object} render.ErrResponse "Not found"
 // @Failure 500 {object} render.ErrResponse "Internal server error"
 // @Router /car/{carID} [get]
 func (ctrl *Controller) GetCar(ctx *gin.Context) {
@@ -161,6 +162,7 @@ func (ctrl *Controller) GetCar(ctx *gin.Context) {
 // @Success 201 {object} MsgResponse "Success response"
 // @Failure 400 {object} render.ErrResponse "Bad request"
 // @Failure 500 {object} render.ErrResponse "Internal server error"
+// @Failure 503 {object} render.ErrResponse "Service Unavailable"
 // @Router /cars [post]
 func (ctrl *Controller) CreateCars(ctx *gin.Context) {
 	var body struct {
