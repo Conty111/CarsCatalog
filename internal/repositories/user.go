@@ -1,7 +1,7 @@
 package repositories
 
 import (
-	"github.com/Conty111/CarsCatalog/internal/client_errors"
+	"github.com/Conty111/CarsCatalog/internal/errs"
 	"github.com/Conty111/CarsCatalog/internal/models"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -22,7 +22,7 @@ func (r *UserRepository) GetByID(id uuid.UUID) (*models.User, error) {
 		return nil, tx.Error
 	}
 	if tx.RowsAffected == 0 {
-		return nil, client_errors.UserNotFound
+		return nil, errs.UserNotFound
 	}
 	return user, nil
 }
@@ -38,7 +38,7 @@ func (r *UserRepository) GetByFullName(name, surname, patronymic string) (*model
 		return nil, tx.Error
 	}
 	if tx.RowsAffected == 0 {
-		return nil, client_errors.UserNotFound
+		return nil, errs.UserNotFound
 	}
 	return &user, nil
 }

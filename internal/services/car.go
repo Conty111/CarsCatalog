@@ -2,7 +2,7 @@ package services
 
 import (
 	"errors"
-	"github.com/Conty111/CarsCatalog/internal/client_errors"
+	"github.com/Conty111/CarsCatalog/internal/errs"
 	"github.com/Conty111/CarsCatalog/internal/external_api"
 	"github.com/Conty111/CarsCatalog/internal/gateways/web/controllers/apiv1/car"
 	"github.com/Conty111/CarsCatalog/internal/gateways/web/helpers"
@@ -42,19 +42,19 @@ func (s *CarService) CreateCars(regNums []string) error {
 	for i, regNum := range regNums {
 		if !s.re.MatchString(regNum) {
 			log.Error().Str("regNum", regNum).Msg("reg num is not in valid")
-			return client_errors.NewInvalidRegNumError(regNum)
+			return errs.NewInvalidRegNumError(regNum)
 		}
 		info, err := s.CarAPI.GetCarInfo(regNum)
 		if err != nil {
 			log.Error().Err(err).Str("regNum", regNum).Msg("error while getting info from external API")
-			return err
+			return external_api.NewExternalAPIError(err)
 		}
 		user, err := s.UserProvider.GetByFullName(
 			info.Owner.Name,
 			info.Owner.Surname,
 			info.Owner.Patronymic,
 		)
-		if errors.Is(err, client_errors.UserNotFound) || errors.Is(err, gorm.ErrRecordNotFound) {
+		if errors.Is(err, errs.UserNotFound) || errors.Is(err, gorm.ErrRecordNotFound) {
 			log.Info().
 				Str("name", info.Owner.Name).
 				Str("surname", info.Owner.Surname).

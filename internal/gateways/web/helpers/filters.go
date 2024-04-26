@@ -38,7 +38,7 @@ func ParseCarFilters(ctx *gin.Context) *models.CarFilter {
 	carFilter.RegNum = ctx.Query(URLQueryCarRegNum)
 	carFilter.Model = ctx.Query(URLQueryCarModel)
 
-	minYear := ctx.Param(URLQueryCarMinYear)
+	minYear := ctx.Query(URLQueryCarMinYear)
 	if minYear != "" {
 		y, err := strconv.Atoi(minYear)
 		if err != nil {
@@ -48,7 +48,7 @@ func ParseCarFilters(ctx *gin.Context) *models.CarFilter {
 		}
 	}
 
-	maxYear := ctx.Param(URLQueryCarMaxYear)
+	maxYear := ctx.Query(URLQueryCarMaxYear)
 	if maxYear != "" {
 		y, err := strconv.Atoi(maxYear)
 		if err != nil {

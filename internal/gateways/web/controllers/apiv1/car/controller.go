@@ -3,7 +3,7 @@ package car
 import (
 	"fmt"
 	"github.com/Conty111/CarsCatalog/internal/gateways/web/controllers/apiv1"
-	"github.com/Conty111/CarsCatalog/internal/gateways/web/helpers"
+	. "github.com/Conty111/CarsCatalog/internal/gateways/web/helpers"
 	"github.com/Conty111/CarsCatalog/internal/gateways/web/render"
 	"github.com/Conty111/CarsCatalog/internal/gateways/web/serializers"
 	"github.com/Conty111/CarsCatalog/internal/models"
@@ -20,9 +20,9 @@ var (
 
 type Service interface {
 	CreateCars(regNums []string) error
-	GetCars(pag *helpers.PaginationParams, filters *models.CarFilter) ([]models.Car, int64, error)
+	GetCars(pag *PaginationParams, filters *models.CarFilter) ([]models.Car, int64, error)
 	GetCarByID(id uuid.UUID) (*models.Car, error)
-	UpdateCarByID(id uuid.UUID, upd *helpers.CarUpdates) error
+	UpdateCarByID(id uuid.UUID, upd *CarUpdates) error
 	DeleteCarByID(id uuid.UUID) error
 }
 
@@ -47,16 +47,24 @@ func (ctrl *Controller) GetRelativePath() string {
 }
 
 // GetCarsList godoc
-// @Summary Get Cars List
-// @Description get list of cars with pagination
-// @ID get-cars
-// @Accept json
+// @Summary Get a list of cars
+// @Description Get a paginated list of cars based on filters
+// @ID get-cars-list
 // @Produce json
-// @Success 200 {object} ResponseDoc
-// @Router /api/v1/car/list [get]
+// @Param limit query int false "Limit number of items per page"
+// @Param offset query int false "Offset for pagination"
+// @Param model query string false "Model of the car"
+// @Param mark query string false "Mark of the car"
+// @Param regNum query string false "Registration number of the car"
+// @Param minYear query int false "Minimum manufacturing year of the car"
+// @Param maxYear query int false "Maximum manufacturing year of the car"
+// @Success 200 {object} PaginationResponse "Success response"
+// @Failure 400 {object} render.ErrResponse "Bad request"
+// @Failure 500 {object} render.ErrResponse "Internal server error"
+// @Router /car/list [get]
 func (ctrl *Controller) GetCarsList(ctx *gin.Context) {
-	filters := helpers.ParseCarFilters(ctx)
-	pag := helpers.ParsePagination(ctx)
+	filters := ParseCarFilters(ctx)
+	pag := ParsePagination(ctx)
 
 	log.Debug().
 		Str("endpoint", "GetCarsList").
@@ -74,7 +82,7 @@ func (ctrl *Controller) GetCarsList(ctx *gin.Context) {
 		Str("endpoint", "GetCarsList").
 		Msg("got list of cars")
 
-	var pagData helpers.PaginationResponse
+	var pagData PaginationResponse
 
 	pagData.Data = make([]interface{}, len(carsData))
 	for i := range carsData {
@@ -118,13 +126,14 @@ func (ctrl *Controller) GetCarsList(ctx *gin.Context) {
 }
 
 // GetCar godoc
-// @Summary Get Car
-// @Description get car by id
-// @ID get-car
-// @Accept json
-// @Produce json
-// @Success 200 {object} ResponseDoc
-// @Router /api/v1/car/:carID [get]
+// @Summary Retrieve information about a car
+// @Description Retrieve information about a car using its id
+// @ID get-car-info
+// @Param carID query string true "ID of the car"
+// @Success 200 {object} serializers.CarInfo "Success Car Info"
+// @Failure 400 {object} render.ErrResponse "Bad request"
+// @Failure 500 {object} render.ErrResponse "Internal server error"
+// @Router /car/{carID} [get]
 func (ctrl *Controller) GetCar(ctx *gin.Context) {
 	carID, err := uuid.Parse(ctx.Param("carID"))
 	if err != nil {
@@ -142,6 +151,17 @@ func (ctrl *Controller) GetCar(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, body)
 }
 
+// CreateCars godoc
+// @Summary Create cars
+// @Description Create cars using their registration numbers
+// @ID create-cars
+// @Accept json
+// @Produce json
+// @Param regNums body []string true "Array of registration numbers of the cars"
+// @Success 201 {object} MsgResponse "Success response"
+// @Failure 400 {object} render.ErrResponse "Bad request"
+// @Failure 500 {object} render.ErrResponse "Internal server error"
+// @Router /cars [post]
 func (ctrl *Controller) CreateCars(ctx *gin.Context) {
 	var body struct {
 		RegNums []string `json:"regNums"`
@@ -161,6 +181,17 @@ func (ctrl *Controller) CreateCars(ctx *gin.Context) {
 	})
 }
 
+// DeleteCar godoc
+// @Summary Delete a car by ID
+// @Description Delete a car using its ID
+// @ID delete-car-by-id
+// @Param carID path string true "ID of the car to delete"
+// @Produce json
+// @Success 200 {object} MsgResponse "Success response"
+// @Failure 400 {object} render.ErrResponse "Bad request"
+// @Failure 404 {object} render.ErrResponse "Not found"
+// @Failure 500 {object} render.ErrResponse "Internal server error"
+// @Router /cars/{carID} [delete]
 func (ctrl *Controller) DeleteCar(ctx *gin.Context) {
 	carID, err := uuid.Parse(ctx.Param("carID"))
 	if err != nil {
@@ -179,13 +210,18 @@ func (ctrl *Controller) DeleteCar(ctx *gin.Context) {
 }
 
 // UpdateCar godoc
-// @Summary Update Car
-// @Description update car by id
-// @ID update-car
+// @Summary Update a car by ID
+// @Description Update a car using its ID
+// @ID update-car-by-id
+// @Param carID path string true "ID of the car to update"
 // @Accept json
 // @Produce json
-// @Success 200 {object} MsgResponse
-// @Router /api/v1/car/:carID [patch]
+// @Param updateCar body CarUpdates true "Car updates"
+// @Success 200 {object} MsgResponse "Success response"
+// @Failure 400 {object} render.ErrResponse "Bad request"
+// @Failure 404 {object} render.ErrResponse "Not found"
+// @Failure 500 {object} render.ErrResponse "Internal server error"
+// @Router /cars/{carID} [put]
 func (ctrl *Controller) UpdateCar(ctx *gin.Context) {
 	carID, err := uuid.Parse(ctx.Param("carID"))
 	if err != nil {
@@ -193,7 +229,7 @@ func (ctrl *Controller) UpdateCar(ctx *gin.Context) {
 		return
 	}
 
-	var upd helpers.CarUpdates
+	var upd CarUpdates
 	if err = ctx.Bind(&upd); err != nil {
 		render.WriteErrorResponse(ctx, err)
 		return

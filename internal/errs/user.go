@@ -1,4 +1,4 @@
-package client_errors
+package errs
 
 import "errors"
 

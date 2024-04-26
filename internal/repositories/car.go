@@ -2,7 +2,7 @@ package repositories
 
 import (
 	"errors"
-	"github.com/Conty111/CarsCatalog/internal/client_errors"
+	"github.com/Conty111/CarsCatalog/internal/errs"
 	"github.com/Conty111/CarsCatalog/internal/models"
 	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
@@ -30,7 +30,7 @@ func (r *CarRepository) GetByID(id uuid.UUID) (*models.Car, error) {
 
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, client_errors.NewCarNotFoundError(id)
+			return nil, errs.NewCarNotFoundError(id)
 		}
 		return nil, err
 	}
@@ -91,11 +91,11 @@ func (r *CarRepository) DeleteByID(id uuid.UUID) error {
 	tx := r.db.Model(&models.Car{}).Delete(&car)
 	if tx.Error != nil {
 		if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
-			return client_errors.NewCarNotFoundError(id)
+			return errs.NewCarNotFoundError(id)
 		}
 	}
 	if tx.RowsAffected == 0 {
-		return client_errors.NewCarNotFoundError(id)
+		return errs.NewCarNotFoundError(id)
 	}
 	return nil
 }
@@ -108,11 +108,11 @@ func (r *CarRepository) UpdateCar(id uuid.UUID, updates interface{}) error {
 		Updates(updates)
 	if tx.Error != nil {
 		if errors.Is(tx.Error, gorm.ErrRecordNotFound) {
-			return client_errors.NewCarNotFoundError(id)
+			return errs.NewCarNotFoundError(id)
 		}
 	}
 	if tx.RowsAffected == 0 {
-		return client_errors.NewCarNotFoundError(id)
+		return errs.NewCarNotFoundError(id)
 	}
 	return nil
 }

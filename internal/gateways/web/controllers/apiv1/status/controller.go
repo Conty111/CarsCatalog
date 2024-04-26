@@ -39,8 +39,8 @@ func (ctrl *Controller) GetRelativePath() string {
 // @ID get-status
 // @Accept json
 // @Produce json
-// @Success 200 {object} ResponseDoc
-// @Router /api/v1/status [get]
+// @Success 200 {object} Response
+// @Router /status [get]
 func (ctrl *Controller) GetStatus(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, &Response{
 		Status: http.StatusText(http.StatusOK),

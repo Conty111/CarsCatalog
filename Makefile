@@ -17,12 +17,6 @@ run-external-API:
 run:
 	go run ./cmd/app/main.go serve
 
-start-docker-compose-test:
-	docker-compose -f docker-compose-test.yml up -d
-
-stop-docker-compose-test:
-	docker-compose -f docker-compose-test.yml down
-
 test-all:
 	#$(MAKE) start-docker-compose-test
 	go test -v ./...
@@ -39,11 +33,10 @@ deps:
 	wire ./...
 
 swagger:
-	swag init --parseDependency -g cmd/app/main.go --output=./api
+	swag init --parseDependency -g cmd/app/main.go --output=./docs/api/web
 
 install-tools:
 #	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.33.0
 	go install github.com/google/wire/cmd/wire@latest
-	go get github.com/google/wire/cmd/wire
+	go install github.com/swaggo/swag/cmd/swag@latest
 	go get -u github.com/onsi/ginkgo/ginkgo
-	go get -u github.com/swaggo/swag/cmd/swag

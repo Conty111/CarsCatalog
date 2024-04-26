@@ -1,7 +1,7 @@
 package helpers
 
 import (
-	"github.com/Conty111/CarsCatalog/internal/client_errors"
+	"github.com/Conty111/CarsCatalog/internal/errs"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
 	"strconv"
@@ -19,17 +19,21 @@ type PaginationParams struct {
 	Offset uint
 }
 
+// PaginationResponse contains pagination information and data.
+// swagger:model PaginationResponse
 type PaginationResponse struct {
 	Data           []interface{}  `json:"data"`
 	PaginationMeta PaginationMeta `json:"pagination"`
-}
+} // @name PaginationResponse
 
+// PaginationMeta contains last offset of items, nextPage (if exist) and previousPage (if exist).
 type PaginationMeta struct {
 	LastOffset   int64  `json:"lastOffset"`
 	NextPage     string `json:"nextPage,omitempty"`
 	PreviousPage string `json:"previousPage,omitempty"`
-}
+} // @name PaginationMeta
 
+// ParsePagination gets pagination params from URL query
 func ParsePagination(ctx *gin.Context) *PaginationParams {
 	var pag PaginationParams
 
@@ -42,7 +46,7 @@ func ParsePagination(ctx *gin.Context) *PaginationParams {
 			log.Error().Err(err).Msg("error while to parsing pagination")
 			pag.Limit = DefaultLimit
 		} else if lim <= 0 {
-			log.Error().Err(client_errors.ErrInvalidLimitParam).Msg("error while to parsing pagination")
+			log.Error().Err(errs.ErrInvalidLimitParam).Msg("error while to parsing pagination")
 			pag.Limit = DefaultLimit
 		} else {
 			pag.Limit = uint(lim)
@@ -58,7 +62,7 @@ func ParsePagination(ctx *gin.Context) *PaginationParams {
 			log.Error().Err(err).Msg("error while to parsing pagination")
 			pag.Offset = DefaultOffset
 		} else if offs < 0 {
-			log.Error().Err(client_errors.ErrInvalidLimitParam).Msg("error while to parsing pagination")
+			log.Error().Err(errs.ErrInvalidLimitParam).Msg("error while to parsing pagination")
 			pag.Offset = DefaultOffset
 		} else {
 			pag.Offset = uint(offs)
