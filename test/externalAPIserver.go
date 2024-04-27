@@ -3,7 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/bxcodec/faker/v3"
+	"github.com/go-faker/faker/v3"
 	"log"
 	"math/rand"
 	"net/http"

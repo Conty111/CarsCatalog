@@ -1,0 +1,41 @@
+version: '3.3'
+
+services:
+  db:
+    image: postgres
+    restart: on-failure
+    env_file:
+      - .docker.env
+    #    volumes:
+    #      - db_data:/var/lib/postgresql/data
+    container_name: db
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  catalog:
+    image: catalog-svc
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    container_name: catalog-svc
+    restart: on-failure
+    env_file:
+      - .docker.env
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8001:8001"
+    entrypoint: "/app"
+    command: "serve"
+
+  external-api:
+    build:
+      context: ./test
+      dockerfile: DockerfileExternalAPI
+    container_name: external-api
+    ports:
+      - "8081:8080"

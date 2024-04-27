@@ -1,0 +1,7 @@
+FROM golang:1.22
+
+COPY externalAPIserver.go main.go
+RUN go mod init example.com && ls -la
+RUN go get github.com/go-faker/faker/v3
+
+CMD ["go", "run", "main.go"]

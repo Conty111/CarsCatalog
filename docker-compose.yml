@@ -4,10 +4,6 @@ services:
   db:
     image: postgres
     restart: on-failure
-#    environment:
-#      POSTGRES_PASSWORD: mysecretpassword
-#      POSTGRES_USER: postgres
-#      POSTGRES_DB: mydatabase
     env_file:
       - .docker.env
 #    volumes:
@@ -29,8 +25,9 @@ services:
     env_file:
       - .docker.env
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     ports:
-      - "8080:8080"
-    entrypoint: "yes"
-#    command: "serve"
+      - "8001:8001"
+    entrypoint: "/app"
+    command: "serve"
