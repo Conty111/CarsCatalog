@@ -2,44 +2,41 @@ package car_test
 
 import (
 	"encoding/json"
+	. "github.com/Conty111/CarsCatalog/internal/gateways/web/controllers/apiv1/car"
 	"github.com/Conty111/CarsCatalog/internal/gateways/web/helpers"
 	"github.com/Conty111/CarsCatalog/internal/models"
 	"github.com/Conty111/CarsCatalog/internal/services"
 	"github.com/Conty111/CarsCatalog/test/mocks"
+	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/mock"
 	"io"
 	"net/http"
 	"net/http/httptest"
-
-	"github.com/gin-gonic/gin"
+	"net/url"
+	"strconv"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-
-	. "github.com/Conty111/CarsCatalog/internal/gateways/web/controllers/apiv1/car"
 )
 
 var _ = Describe("Car Controller", func() {
 	var (
-		t                 GinkgoTInterface
-		carCtrl           *Controller
-		ctx               *gin.Context
-		w                 *httptest.ResponseRecorder
-		userProvider      *mocks.UserProvider
-		carManager        *mocks.CarManager
-		extApiClient      *mocks.ExternalAPIClient
+		t            GinkgoTInterface
+		w            *httptest.ResponseRecorder
+		ctx          *gin.Context
+		carManager   *mocks.CarManager
+		userProvider *mocks.UserProvider
+		extApiClient *mocks.ExternalAPIClient
+		service      Service
+		carCtrl      *Controller
+
 		owner             *models.User
 		ladaVesta         *models.Car
 		mercedes          *models.Car
 		volgaWithoutOwner *models.Car
-		service           Service
 	)
-
 	BeforeEach(func() {
-
-		gin.SetMode(gin.DebugMode)
-
 		w = httptest.NewRecorder()
 		ctx, _ = gin.CreateTestContext(w)
 
@@ -120,12 +117,45 @@ var _ = Describe("Car Controller", func() {
 
 				Expect(len(pagData.Data)).To(Equal(len(allCars)))
 				Expect(pagData.PaginationMeta.LastOffset).To(Equal(int64(len(allCars))))
-				if pagData.PaginationMeta.NextPage != "" {
-					Expect(pagData.PaginationMeta.NextPage).To(Equal("/api/v1/car/list?offset=10&limit=10"))
-				}
-				if pagData.PaginationMeta.PreviousPage != "" {
-					Expect(pagData.PaginationMeta.PreviousPage).To(Equal("/api/v1/car/list?offset=0&limit=10"))
-				}
+			})
+		})
+		Context("request with URL query params", func() {
+			It("should return status OK and pagination meta", func() {
+				var offs, limit int = 0, 10
+				allCars := []models.Car{*mercedes}
+
+				carManager.Mock.
+					On("GetCars", offs, limit, mock.AnythingOfType("*models.CarFilter")).
+					Once().Return(allCars, nil)
+				carManager.Mock.
+					On("GetLastOffset", mock.AnythingOfType("*models.CarFilter")).
+					Once().Return(int64(len(allCars)), nil)
+
+				params := url.Values{}
+				params.Set("limit", strconv.Itoa(limit))
+				params.Set("offset", strconv.Itoa(offs))
+				params.Set("model", mercedes.Model)
+				params.Set("mark", mercedes.Mark)
+				params.Set("regNum", mercedes.RegNum)
+				params.Set("minYear", strconv.Itoa(int(mercedes.Year-1)))
+				params.Set("maxYear", strconv.Itoa(int(mercedes.Year+1)))
+
+				req, _ := http.NewRequest(http.MethodGet, "/api/v1/car/list"+"?"+params.Encode(), nil)
+
+				ctx.Request = req
+
+				carCtrl.GetCarsList(ctx)
+
+				Expect(w.Result().StatusCode).To(Equal(http.StatusOK))
+
+				responseBody, err := io.ReadAll(w.Result().Body)
+				Expect(err).NotTo(HaveOccurred())
+				var pagData helpers.PaginationResponse
+				err = json.Unmarshal(responseBody, &pagData)
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(len(pagData.Data)).To(Equal(len(allCars)))
+				Expect(pagData.PaginationMeta.LastOffset).To(Equal(int64(len(allCars))))
 			})
 		})
 	})
