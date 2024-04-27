@@ -19,13 +19,13 @@ const pattern = "^[ABEKMHOPCTYXАВЕКМНОРСТУХ]{1}\\d{3}[ABEKMHOPCTYXА
 type CarService struct {
 	CarRepo      interfaces.CarManager
 	UserProvider interfaces.UserProvider
-	CarAPI       *external_api.Client
+	CarAPI       external_api.ExternalAPIClient
 	re           *regexp.Regexp
 }
 
 func NewCarService(
 	repo interfaces.CarManager,
-	apiClient *external_api.Client,
+	apiClient external_api.ExternalAPIClient,
 	userProvider interfaces.UserProvider) car.Service {
 
 	re := regexp.MustCompile(pattern)
@@ -86,7 +86,7 @@ func (s *CarService) CreateCars(regNums []string) error {
 			Model:   info.Model,
 			Mark:    info.Mark,
 			Year:    int32(info.Year),
-			OwnerID: user.ID,
+			OwnerID: &user.ID,
 			Owner:   user,
 		}
 	}

@@ -4,6 +4,7 @@ go 1.22
 
 require (
 	github.com/gin-gonic/gin v1.9.1
+	github.com/go-faker/faker/v3 v3.0.0-20220609044348-463a3727a796
 	github.com/go-playground/validator/v10 v10.14.0
 	github.com/gobuffalo/envy v1.10.2
 	github.com/google/uuid v1.6.0
@@ -27,7 +28,6 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.2 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
-	github.com/go-faker/faker/v3 v3.0.0-20220609044348-463a3727a796 // indirect
 	github.com/go-logr/logr v1.4.1 // indirect
 	github.com/go-openapi/jsonpointer v0.21.0 // indirect
 	github.com/go-openapi/jsonreference v0.21.0 // indirect

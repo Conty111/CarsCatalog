@@ -1,4 +1,4 @@
-package status_test
+package car_test
 
 import (
 	"testing"
@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestStatus(t *testing.T) {
+func TestCar(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Status Suite")
+	RunSpecs(t, "Car Suite")
 }

@@ -17,6 +17,9 @@ run-external-API:
 run:
 	go run ./cmd/app/main.go serve
 
+test-unit:
+	go test -v -cover ./...
+
 test-all:
 	#$(MAKE) start-docker-compose-test
 	go test -v ./...

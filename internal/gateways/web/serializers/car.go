@@ -31,12 +31,14 @@ func SerializeCarInfo(c *models.Car) *CarInfo {
 		Model:  c.Model,
 		Mark:   c.Mark,
 		Year:   int(c.Year),
-		Owner: UserInfo{
+	}
+	if c.Owner != nil {
+		carInfo.Owner = UserInfo{
 			ID:         c.OwnerID.String(),
 			Name:       c.Owner.Name,
 			Surname:    c.Owner.Surname,
 			Patronymic: *c.Owner.Patronymic,
-		},
+		}
 	}
 
 	return carInfo

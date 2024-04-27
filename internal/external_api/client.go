@@ -9,22 +9,6 @@ import (
 	"net/http"
 )
 
-// CarData структура для хранения данных о машине
-type CarData struct {
-	RegNum string     `json:"regNum"`
-	Mark   string     `json:"mark"`
-	Model  string     `json:"model"`
-	Year   int        `json:"year"`
-	Owner  PeopleData `json:"owner"`
-}
-
-// PeopleData структура для хранения данных о владельце
-type PeopleData struct {
-	Name       string `json:"name"`
-	Surname    string `json:"surname"`
-	Patronymic string `json:"patronymic"`
-}
-
 type Client struct {
 	defaultHeader map[string]string
 	client        *http.Client
