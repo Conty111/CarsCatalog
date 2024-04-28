@@ -2,6 +2,7 @@ package car
 
 import (
 	"fmt"
+	"github.com/Conty111/CarsCatalog/internal/errs"
 	"github.com/Conty111/CarsCatalog/internal/gateways/web/controllers/apiv1"
 	. "github.com/Conty111/CarsCatalog/internal/gateways/web/helpers"
 	"github.com/Conty111/CarsCatalog/internal/gateways/web/render"
@@ -138,11 +139,18 @@ func (ctrl *Controller) GetCarsList(ctx *gin.Context) {
 func (ctrl *Controller) GetCar(ctx *gin.Context) {
 	carID, err := uuid.Parse(ctx.Param("carID"))
 	if err != nil {
+		log.Error().
+			Err(err).
+			Msg("failed to get carID param")
 		render.WriteErrorResponse(ctx, err)
 		return
 	}
 	carModel, err := ctrl.Service.GetCarByID(carID)
 	if err != nil {
+		log.Error().
+			Err(err).
+			Str("carID", carID.String()).
+			Msg("failed to get by carID")
 		render.WriteErrorResponse(ctx, err)
 		return
 	}
@@ -169,7 +177,13 @@ func (ctrl *Controller) CreateCars(ctx *gin.Context) {
 		RegNums []string `json:"regNums"`
 	}
 	if err := ctx.ShouldBind(&body); err != nil {
+		log.Error().Err(err).Msg("failed to bind request body")
 		render.WriteErrorResponse(ctx, err)
+		return
+	}
+	if body.RegNums == nil {
+		log.Error().Err(errs.ErrInvalidBody).Msg("body is nil")
+		render.WriteErrorResponse(ctx, errs.ErrInvalidBody)
 		return
 	}
 	err := ctrl.Service.CreateCars(body.RegNums)
@@ -197,11 +211,18 @@ func (ctrl *Controller) CreateCars(ctx *gin.Context) {
 func (ctrl *Controller) DeleteCar(ctx *gin.Context) {
 	carID, err := uuid.Parse(ctx.Param("carID"))
 	if err != nil {
+		log.Error().
+			Err(err).
+			Msg("failed to get carID")
 		render.WriteErrorResponse(ctx, err)
 		return
 	}
 	err = ctrl.Service.DeleteCarByID(carID)
 	if err != nil {
+		log.Error().
+			Err(err).
+			Str("carID", carID.String()).
+			Msg("failed to delete car by ID")
 		render.WriteErrorResponse(ctx, err)
 		return
 	}

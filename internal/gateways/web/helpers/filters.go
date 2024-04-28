@@ -5,6 +5,7 @@ import (
 	"github.com/Conty111/CarsCatalog/internal/models"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
+	"regexp"
 	"strconv"
 )
 
@@ -12,6 +13,8 @@ const (
 	URLQueryUserName       = "userName"
 	URLQueryUserSurname    = "userSurname"
 	URLQueryUserPatronymic = "userPatronymic"
+
+	CarRegNumPattern = "^[ABEKMHOPCTYXАВЕКМНОРСТУХ]{1}\\d{3}[ABEKMHOPCTYXАВЕКМНОРСТУХ]{2}\\d{2,3}$"
 
 	URLQueryCarMinYear = "minYear"
 	URLQueryCarMaxYear = "maxYear"
@@ -35,8 +38,15 @@ func ParseCarFilters(ctx *gin.Context) *models.CarFilter {
 
 	carFilter.Model = ctx.Query(URLQueryCarModel)
 	carFilter.Mark = ctx.Query(URLQueryCarMark)
-	carFilter.RegNum = ctx.Query(URLQueryCarRegNum)
 	carFilter.Model = ctx.Query(URLQueryCarModel)
+
+	re := regexp.MustCompile(CarRegNumPattern)
+	regNum := ctx.Query(URLQueryCarRegNum)
+	if !re.MatchString(regNum) {
+		log.Error().Msg("invalid reg num in params")
+	} else {
+		carFilter.RegNum = regNum
+	}
 
 	minYear := ctx.Query(URLQueryCarMinYear)
 	if minYear != "" {

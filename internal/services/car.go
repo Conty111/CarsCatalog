@@ -14,7 +14,7 @@ import (
 	"regexp"
 )
 
-const pattern = "^[ABEKMHOPCTYXАВЕКМНОРСТУХ]{1}\\d{3}[ABEKMHOPCTYXАВЕКМНОРСТУХ]{2}\\d{2,3}$"
+const CarRegNumPattern = "^[ABEKMHOPCTYXАВЕКМНОРСТУХ]{1}\\d{3}[ABEKMHOPCTYXАВЕКМНОРСТУХ]{2}\\d{2,3}$"
 
 type CarService struct {
 	CarRepo      interfaces.CarManager
@@ -28,7 +28,7 @@ func NewCarService(
 	apiClient external_api.ExternalAPIClient,
 	userProvider interfaces.UserProvider) car.Service {
 
-	re := regexp.MustCompile(pattern)
+	re := regexp.MustCompile(CarRegNumPattern)
 	return &CarService{
 		CarRepo:      repo,
 		UserProvider: userProvider,
@@ -49,45 +49,47 @@ func (s *CarService) CreateCars(regNums []string) error {
 			log.Error().Err(err).Str("regNum", regNum).Msg("error while getting info from external API")
 			return external_api.NewExternalAPIError(err)
 		}
-		user, err := s.UserProvider.GetByFullName(
-			info.Owner.Name,
-			info.Owner.Surname,
-			info.Owner.Patronymic,
-		)
-		if errors.Is(err, errs.UserNotFound) || errors.Is(err, gorm.ErrRecordNotFound) {
-			log.Info().
-				Str("name", info.Owner.Name).
-				Str("surname", info.Owner.Surname).
-				Str("patronymic", info.Owner.Patronymic).
-				Msg("user not found in database, creating new")
+		cars[i] = &models.Car{
+			RegNum: regNum,
+			Model:  info.Model,
+			Mark:   info.Mark,
+			Year:   int32(info.Year),
+		}
 
-			newUser := models.User{
-				Name:       info.Owner.Name,
-				Surname:    info.Owner.Surname,
-				Patronymic: &info.Owner.Patronymic,
-			}
-			err = s.UserProvider.CreateUser(&newUser)
-			if err != nil {
-				log.Error().Err(err).Msg("error while creating user")
+		if info.Owner != nil {
+			user, err := s.UserProvider.GetByFullName(
+				info.Owner.Name,
+				info.Owner.Surname,
+				info.Owner.Patronymic,
+			)
+			if errors.Is(err, errs.UserNotFound) || errors.Is(err, gorm.ErrRecordNotFound) {
+				log.Info().
+					Str("name", info.Owner.Name).
+					Str("surname", info.Owner.Surname).
+					Str("patronymic", info.Owner.Patronymic).
+					Msg("user not found in database, creating new")
+
+				newUser := models.User{
+					Name:       info.Owner.Name,
+					Surname:    info.Owner.Surname,
+					Patronymic: &info.Owner.Patronymic,
+				}
+				err = s.UserProvider.CreateUser(&newUser)
+				if err != nil {
+					log.Error().Err(err).Msg("error while creating user")
+					return err
+				}
+				user = &newUser
+			} else if err != nil {
+				log.Error().Err(err).
+					Str("name", info.Owner.Name).
+					Str("surname", info.Owner.Surname).
+					Str("patronymic", info.Owner.Patronymic).
+					Msg("error while finding user in database")
 				return err
 			}
-			user = &newUser
-
-		} else if err != nil {
-			log.Error().Err(err).
-				Str("name", info.Owner.Name).
-				Str("surname", info.Owner.Surname).
-				Str("patronymic", info.Owner.Patronymic).
-				Msg("error while finding user in database")
-			return err
-		}
-		cars[i] = &models.Car{
-			RegNum:  regNum,
-			Model:   info.Model,
-			Mark:    info.Mark,
-			Year:    int32(info.Year),
-			OwnerID: &user.ID,
-			Owner:   user,
+			cars[i].OwnerID = &user.ID
+			cars[i].Owner = user
 		}
 	}
 	return s.CarRepo.CreateCars(cars)

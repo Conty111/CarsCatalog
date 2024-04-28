@@ -1,8 +1,13 @@
 package errs
 
 import (
+	"errors"
 	"fmt"
 	"github.com/google/uuid"
+)
+
+var (
+	ErrInvalidBody = errors.New("invalid request body provided")
 )
 
 type CarNotFoundError struct {

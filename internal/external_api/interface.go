@@ -2,11 +2,11 @@ package external_api
 
 // CarData структура для хранения данных о машине
 type CarData struct {
-	RegNum string     `json:"regNum"`
-	Mark   string     `json:"mark"`
-	Model  string     `json:"model"`
-	Year   int        `json:"year"`
-	Owner  PeopleData `json:"owner"`
+	RegNum string      `json:"regNum"`
+	Mark   string      `json:"mark"`
+	Model  string      `json:"model"`
+	Year   int         `json:"year"`
+	Owner  *PeopleData `json:"owner"`
 }
 
 // PeopleData структура для хранения данных о владельце

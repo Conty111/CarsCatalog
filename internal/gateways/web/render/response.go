@@ -6,6 +6,7 @@ import (
 	"github.com/Conty111/CarsCatalog/internal/external_api"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
+	"github.com/google/uuid"
 	"net/http"
 )
 
@@ -33,16 +34,15 @@ func WriteErrorResponse(ctx *gin.Context, err error) {
 	case errors.As(err, &regNumExistError),
 		errors.As(err, &invalidRegNumError),
 		errors.As(err, &validationErrors),
+		errors.As(err, &validator.ValidationErrors{}),
 		errors.Is(err, errs.ErrInvalidLimitParam),
-		errors.Is(err, errs.ErrInvalidOffsetParam):
+		errors.Is(err, errs.ErrInvalidOffsetParam),
+		errors.Is(err, errs.ErrInvalidBody),
+		uuid.IsInvalidLengthError(err):
 
 		status = http.StatusBadRequest
 	default:
 		status = http.StatusInternalServerError
-	}
-
-	if errors.As(err, &validator.ValidationErrors{}) {
-		status = http.StatusBadRequest
 	}
 
 	ctx.AbortWithStatusJSON(status, &ErrResponse{
