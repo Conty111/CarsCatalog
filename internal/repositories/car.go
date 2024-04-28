@@ -100,7 +100,7 @@ func (r *CarRepository) DeleteByID(id uuid.UUID) error {
 	return nil
 }
 
-func (r *CarRepository) UpdateCar(id uuid.UUID, updates interface{}) error {
+func (r *CarRepository) UpdateByID(id uuid.UUID, updates interface{}) error {
 	tx := r.db.
 		Debug().
 		Model(&models.Car{}).

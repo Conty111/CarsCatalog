@@ -108,8 +108,8 @@ func (_m *CarManager) GetLastOffset(filters *models.CarFilter) (int64, error) {
 	return r0, r1
 }
 
-// UpdateCar provides a mock function with given fields: id, updates
-func (_m *CarManager) UpdateCar(id uuid.UUID, updates interface{}) error {
+// UpdateByID provides a mock function with given fields: id, updates
+func (_m *CarManager) UpdateByID(id uuid.UUID, updates interface{}) error {
 	ret := _m.Called(id, updates)
 
 	var r0 error

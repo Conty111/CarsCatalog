@@ -257,6 +257,11 @@ func (ctrl *Controller) UpdateCar(ctx *gin.Context) {
 		render.WriteErrorResponse(ctx, err)
 		return
 	}
+	if upd == (CarUpdates{}) {
+		log.Error().Err(errs.ErrInvalidBody).Msg("body is nil")
+		render.WriteErrorResponse(ctx, errs.ErrInvalidBody)
+		return
+	}
 
 	err = ctrl.Service.UpdateCarByID(carID, &upd)
 	if err != nil {

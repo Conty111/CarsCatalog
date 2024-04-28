@@ -62,8 +62,8 @@ make install-tools
 # build application
 make build
 
-# run all tests
-make test-all
+# run all unit tests
+make test-unit
 
 # run go generate
 make gen

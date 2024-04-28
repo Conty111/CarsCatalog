@@ -11,7 +11,7 @@ type CarManager interface {
 	DeleteByID(id uuid.UUID) error
 	GetCars(offset int, limit int, filters *models.CarFilter) ([]models.Car, error)
 	GetLastOffset(filters *models.CarFilter) (int64, error)
-	UpdateCar(id uuid.UUID, updates interface{}) error
+	UpdateByID(id uuid.UUID, updates interface{}) error
 	CreateCars(cars []*models.Car) error
 }
 

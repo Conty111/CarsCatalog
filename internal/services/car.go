@@ -119,7 +119,7 @@ func (s *CarService) GetCarByID(id uuid.UUID) (*models.Car, error) {
 	return carInfo, nil
 }
 
-func (s *CarService) UpdateCarByID(id uuid.UUID, upd *helpers.CarUpdates) error {
+func (s *CarService) UpdateCarByID(id uuid.UUID, upd *car.CarUpdates) error {
 	if upd.OwnerID != "" {
 		userID, err := uuid.Parse(upd.OwnerID)
 		if err != nil {
@@ -135,9 +135,10 @@ func (s *CarService) UpdateCarByID(id uuid.UUID, upd *helpers.CarUpdates) error 
 				Str("ownerID", userID.String()).
 				Str("carID", id.String()).
 				Msg("error while finding owner")
+			return err
 		}
 	}
-	return s.CarRepo.UpdateCar(id, upd)
+	return s.CarRepo.UpdateByID(id, upd)
 }
 
 func (s *CarService) DeleteCarByID(id uuid.UUID) error {

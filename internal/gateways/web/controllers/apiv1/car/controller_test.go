@@ -385,103 +385,75 @@ var _ = Describe("Car Controller", func() {
 		})
 	})
 
-	//Describe("UpdateCar()", func() {
-	//	Context("valid car ID and update provided", func() {
-	//		It("should return status OK with success message", func() {
-	//			carID := mercedes.ID // Assuming 'mercedes' is the car to be updated
-	//			update := CarUpdates{
-	//				Model: "New Model",
-	//				Mark:  "New Mark",
-	//				Year:  2025,
-	//			}
-	//
-	//			reqBody, _ := json.Marshal(update)
-	//			reqURL := "/cars/" + carID.String()
-	//			req, _ := http.NewRequest(http.MethodPut, reqURL, bytes.NewReader(reqBody))
-	//			req.Header.Set("Content-Type", "application/json")
-	//			ctx.Request = req
-	//
-	//			carManager.Mock.
-	//				On("UpdateCarByID", carID, &update).
-	//				Once().Return(nil)
-	//
-	//			carCtrl.UpdateCar(ctx)
-	//
-	//			Expect(w.Result().StatusCode).To(Equal(http.StatusOK))
-	//
-	//			responseBody, err := io.ReadAll(w.Result().Body)
-	//			Expect(err).NotTo(HaveOccurred())
-	//
-	//			var msgResponse MsgResponse
-	//			err = json.Unmarshal(responseBody, &msgResponse)
-	//			Expect(err).NotTo(HaveOccurred())
-	//
-	//			Expect(msgResponse.Message).To(Equal("car successfully updated"))
-	//			Expect(msgResponse.Status).To(Equal("OK"))
-	//		})
-	//	})
-	//
-	//	Context("invalid car ID provided", func() {
-	//		It("should return status BadRequest", func() {
-	//			invalidCarID := "invalid-car-id"
-	//			update := CarUpdates{
-	//				Model: "New Model",
-	//				Mark:  "New Mark",
-	//				Year:  2025,
-	//			}
-	//
-	//			reqBody, _ := json.Marshal(update)
-	//			reqURL := "/cars/" + invalidCarID
-	//			req, _ := http.NewRequest(http.MethodPut, reqURL, bytes.NewReader(reqBody))
-	//			req.Header.Set("Content-Type", "application/json")
-	//			ctx.Request = req
-	//
-	//			carCtrl.UpdateCar(ctx)
-	//
-	//			Expect(w.Result().StatusCode).To(Equal(http.StatusBadRequest))
-	//		})
-	//	})
-	//
-	//	Context("car not found", func() {
-	//		It("should return status NotFound", func() {
-	//			notFoundCarID := uuid.New()
-	//			update := CarUpdates{
-	//				Model: "New Model",
-	//				Mark:  "New Mark",
-	//				Year:  2025,
-	//			}
-	//
-	//			reqBody, _ := json.Marshal(update)
-	//			reqURL := "/cars/" + notFoundCarID.String()
-	//			req, _ := http.NewRequest(http.MethodPut, reqURL, bytes.NewReader(reqBody))
-	//			req.Header.Set("Content-Type", "application/json")
-	//			ctx.Request = req
-	//
-	//			carManager.Mock.
-	//				On("UpdateCarByID", notFoundCarID, &update).
-	//				Once().Return(errors.New("car not found"))
-	//
-	//			carCtrl.UpdateCar(ctx)
-	//
-	//			Expect(w.Result().StatusCode).To(Equal(http.StatusNotFound))
-	//		})
-	//	})
-	//
-	//	Context("invalid request body provided", func() {
-	//		It("should return status BadRequest", func() {
-	//			invalidReqBody := []byte(`{"invalidField": "value"}`)
-	//			carID := mercedes.ID // Assuming 'mercedes' is the car to be updated
-	//
-	//			reqURL := "/cars/" + carID.String()
-	//			req, _ := http.NewRequest(http.MethodPut, reqURL, bytes.NewReader(invalidReqBody))
-	//			req.Header.Set("Content-Type", "application/json")
-	//			ctx.Request = req
-	//
-	//			carCtrl.UpdateCar(ctx)
-	//
-	//			Expect(w.Result().StatusCode).To(Equal(http.StatusBadRequest))
-	//		})
-	//	})
-	//})
+	Describe("UpdateCar()", func() {
+		Context("valid car ID and update provided", func() {
+			It("should return status OK with success message", func() {
+				update := CarUpdates{
+					Model: "New Model",
+					Mark:  "New Mark",
+					Year:  2025,
+				}
+
+				reqBody, _ := json.Marshal(update)
+				req, _ := http.NewRequest(http.MethodPut, baseURI+"/car/", bytes.NewReader(reqBody))
+				req.Header.Set("Content-Type", "application/json")
+				ctx.Request = req
+				ctx.AddParam("carID", mercedes.ID.String())
+
+				carManager.Mock.
+					On("UpdateByID", mercedes.ID, &update).
+					Once().Return(nil)
+
+				carCtrl.UpdateCar(ctx)
+
+				Expect(w.Result().StatusCode).To(Equal(http.StatusOK))
+
+				responseBody, err := io.ReadAll(w.Result().Body)
+				Expect(err).NotTo(HaveOccurred())
+
+				var msgResponse MsgResponse
+				err = json.Unmarshal(responseBody, &msgResponse)
+				Expect(err).NotTo(HaveOccurred())
+
+				Expect(msgResponse.Status).To(Equal("OK"))
+			})
+		})
+
+		Context("invalid car ID provided", func() {
+			It("should return status BadRequest", func() {
+				invalidCarID := "invalid-car-id"
+				update := CarUpdates{
+					Model: "New Model",
+					Mark:  "New Mark",
+					Year:  2025,
+				}
+
+				reqBody, _ := json.Marshal(update)
+				req, _ := http.NewRequest(http.MethodPut, baseURI+"/car/", bytes.NewReader(reqBody))
+				req.Header.Set("Content-Type", "application/json")
+				ctx.Request = req
+				ctx.AddParam("carID", invalidCarID)
+
+				carCtrl.UpdateCar(ctx)
+
+				Expect(w.Result().StatusCode).To(Equal(http.StatusBadRequest))
+			})
+		})
+
+		Context("invalid request body provided", func() {
+			It("should return status BadRequest", func() {
+				invalidReqBody := []byte(`{"invalidField": "value"}`)
+
+				req, _ := http.NewRequest(http.MethodPut, baseURI+"/car/", bytes.NewReader(invalidReqBody))
+				req.Header.Set("Content-Type", "application/json")
+				ctx.Request = req
+				ctx.AddParam("carID", mercedes.ID.String())
+
+				carCtrl.UpdateCar(ctx)
+
+				Expect(w.Result().StatusCode).To(Equal(http.StatusBadRequest))
+			})
+		})
+	})
 
 })
