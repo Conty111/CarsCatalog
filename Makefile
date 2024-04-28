@@ -39,7 +39,7 @@ swagger:
 	swag init --parseDependency -g cmd/app/main.go --output=./docs/api/web
 
 install-tools:
-#	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.33.0
+	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.57.2
 	go install github.com/google/wire/cmd/wire@latest
 	go install github.com/swaggo/swag/cmd/swag@latest
 	go get -u github.com/onsi/ginkgo/ginkgo

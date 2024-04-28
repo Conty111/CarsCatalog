@@ -52,7 +52,10 @@ func getInfoHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	w.Write(responseJSON)
+	_, err = w.Write(responseJSON)
+	if err != nil {
+		log.Print(err)
+	}
 }
 
 func generateCarInfo(regNum string) Car {
